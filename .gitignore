@@ -1,0 +1,33 @@
+# --- Dati: MAI su GitHub (pesanti e con licenze per-immagine) ---
+data/raw/
+data/processed/
+*.zip
+*.tar
+*.tar.gz
+*.jpg
+*.jpeg
+*.JPG
+
+# --- Modelli addestrati (vanno su Drive) ---
+models/
+*.h5
+*.keras
+*.pth
+*.pt
+*.ckpt
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# --- Segreti ---
+.env
+*token*
+kaggle.json
+
+# --- Sistema ---
+.DS_Store
+Thumbs.db

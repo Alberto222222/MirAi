@@ -1,0 +1,15 @@
+# Su Google Colab sono già tutti installati: questo file serve per
+# riprodurre l'ambiente su un altro computer (pip install -r requirements.txt).
+numpy>=1.26
+pandas>=2.0
+pillow>=10.0
+scikit-learn>=1.3
+matplotlib>=3.8
+tqdm>=4.66
+# Dalla fase di addestramento in poi:
+tensorflow>=2.15
+# Dalla fase di Explainable AI in poi:
+lime>=0.2.0.1
+scikit-image>=0.22
+# Per l'app:
+gradio>=4.0
