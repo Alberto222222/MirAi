@@ -181,6 +181,15 @@ def map_images_to_churches(meta, churches: dict) -> tuple[list, str]:
                     else:
                         rows.append((str(im), cid, None))
             return rows, "chiesa -> lista di immagini (chiavi = QID delle chiese)"
+        # Formato WikiChurches: chiave = nome del file, che inizia con il QID della chiesa
+        # (es. "Q16550866_wd0.jpg" = foto 0 della chiesa Q16550866)
+        key_hits = sum(any(q in churches for q in QID_RE.findall(k)[:1]) for k in keys)
+        if key_hits / max(1, len(keys)) > 0.5:
+            for k, rec in meta.items():
+                q = QID_RE.findall(k)[:1]
+                if q and q[0] in churches:
+                    rows.append((k, q[0], rec))
+            return rows, "nome del file -> chiesa (il nome inizia con il QID della chiesa)"
         records = list(meta.items())
     elif isinstance(meta, list):
         records = [(None, r) for r in meta]
@@ -283,6 +292,10 @@ def inspect_metadata(raw_dir: str | Path) -> None:
         with zipfile.ZipFile(lab) as zf:
             for n in zf.namelist()[:15]:
                 print("   ", n)
+            for n in zf.namelist():
+                if re.search(r"wc4_(train|val|test)\.txt$", n):
+                    lines = zf.read(n).decode("utf-8", "replace").splitlines()
+                    print(f"  {n}: {len(lines)} righe, esempi: {lines[:3]}")
     print("=" * 70, "\nFine ispezione.")
 
 
@@ -410,7 +423,8 @@ def extract_resize(index_csv: str | Path, zip_path: str | Path, out_dir: str | P
     with zipfile.ZipFile(zip_path) as zf:
         for row in tqdm(df.itertuples(), total=len(df), desc="Estrazione"):
             stem = re.sub(r"[^A-Za-z0-9_-]+", "_", PurePosixPath(row.member).stem)[:80]
-            rel = f"{row.style}/{row.church_id}_{stem}.jpg"
+            name = stem if stem.startswith(row.church_id) else f"{row.church_id}_{stem}"
+            rel = f"{row.style}/{name}.jpg"
             try:
                 data = zf.read(row.member)
                 img = ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert("RGB")
