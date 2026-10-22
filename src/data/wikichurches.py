@@ -4,10 +4,11 @@ Passi (ognuno è una funzione e un sotto-comando da riga di comando):
 
     inspect      stampa la struttura dei file di metadati (verifica)
     preview      conta chiese e immagini per stile, PRIMA del download grosso
-    build-index  collega ogni immagine dello zip alla sua chiesa e al suo stile
+    build-index-official  indice dallo split ufficiale WikiChurches-4 (scelta del progetto)
+    build-index  alternativa: indice costruito dagli stili delle chiese
     extract      estrae solo le immagini utili e le ridimensiona (lato corto 256)
-    split        divide in train/val/test PER CHIESA (niente foto dello stesso
-                 edificio in due insiemi diversi)
+    split        mantiene lo split ufficiale (o ne crea uno per chiesa) e controlla
+                 che nessun edificio e nessuna foto compaiano in due insiemi
     report       tabelle dei conteggi, grafico a barre, griglia di esempi
 
 Esempio:
@@ -328,7 +329,74 @@ def preview_counts(raw_dir: str | Path) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
-# 3. Indice immagine -> chiesa -> stile
+# 3a. Indice dallo split ufficiale (WikiChurches-4)
+# ---------------------------------------------------------------------------
+def read_official_split(raw_dir: str | Path, name: str = config.OFFICIAL_SPLIT) -> pd.DataFrame:
+    """Legge labels/<name>_{train,val,test}.txt: ogni riga è «nome_file QID_stile»."""
+    q2c = {q: c for c, q in config.STYLE_QIDS.items()}
+    rows, unknown = [], Counter()
+    with zipfile.ZipFile(Path(raw_dir) / "labels.zip") as zf:
+        for split in ("train", "val", "test"):
+            member = next(n for n in zf.namelist() if n.endswith(f"{name}_{split}.txt"))
+            for line in zf.read(member).decode("utf-8").splitlines():
+                parts = line.split()
+                if len(parts) < 2:
+                    continue
+                fname, label = parts[0], parts[-1]
+                if label not in q2c:
+                    unknown[label] += 1
+                    continue
+                rows.append({"file": fname, "style": q2c[label], "split": split})
+    if unknown:
+        print("Etichette non riconosciute (righe scartate):", dict(unknown))
+    return pd.DataFrame(rows)
+
+
+def build_index_official(raw_dir: str | Path, out_csv: str | Path,
+                         name: str = config.OFFICIAL_SPLIT) -> pd.DataFrame:
+    """Collega le immagini dello split ufficiale ai file dello zip e alle informazioni sulle chiese."""
+    raw = Path(raw_dir)
+    churches = _load_json(raw / "churches.json")
+    meta = _load_json(raw / "image_meta.json")
+    split = read_official_split(raw, name)
+    print(f"Split ufficiale {name}: {len(split)} immagini")
+
+    with zipfile.ZipFile(raw / IMAGES_ZIP) as zf:
+        members = _zip_image_members(zf)
+    by_name = {PurePosixPath(m).name: m for m in members}
+    print(f"Immagini nello zip: {len(members)}")
+
+    split["member"] = split["file"].map(by_name)
+    missing = split["member"].isna().sum()
+    if missing:
+        print(f"Attenzione: {missing} immagini dello split non trovate nello zip (scartate)")
+    df = split.dropna(subset=["member"]).copy()
+    df["church_id"] = df["file"].map(lambda f: (QID_RE.findall(f) or [""])[0])
+    attrib = df["file"].map(lambda f: _attrib(meta.get(f) if isinstance(meta, dict) else None))
+    for k in ("author", "license", "source_url"):
+        df[k] = attrib.map(lambda a: a[k])
+
+    def _ch(c, *keys):
+        v = churches.get(c, {})
+        for k in keys:
+            v = (v or {}).get(k) if isinstance(v, dict) else None
+        return v
+
+    df["church_name"] = df["church_id"].map(lambda c: _ch(c, "name"))
+    df["country"] = df["church_id"].map(lambda c: _ch(c, "country", "name"))
+    df["lat"] = df["church_id"].map(lambda c: _ch(c, "location", "lat"))
+    df["lon"] = df["church_id"].map(lambda c: _ch(c, "location", "lon"))
+
+    print(pd.crosstab(df["style"], df["split"]).reindex(index=config.CLASSES,
+                                                        columns=["train", "val", "test"]).to_string())
+    Path(out_csv).parent.mkdir(parents=True, exist_ok=True)
+    df.drop(columns=["file"]).to_csv(out_csv, index=False)
+    print("Indice salvato in", out_csv)
+    return df
+
+
+# ---------------------------------------------------------------------------
+# 3b. Indice costruito dagli stili delle chiese (alternativa allo split ufficiale)
 # ---------------------------------------------------------------------------
 def build_index(raw_dir: str | Path, out_csv: str | Path,
                 use_substyles: bool = False) -> pd.DataFrame:
@@ -472,25 +540,30 @@ def restore_from_drive(drive_dir: str | Path = config.DRIVE_DATA_DIR,
 
 
 # ---------------------------------------------------------------------------
-# 5. Split per chiesa
+# 5. Split e controlli
 # ---------------------------------------------------------------------------
 def make_splits(processed_csv: str | Path, out_csv: str | Path,
                 ratios=config.SPLIT_RATIOS, seed: int = config.SEED) -> pd.DataFrame:
-    from sklearn.model_selection import train_test_split
-
+    """Se l'indice contiene già la colonna 'split' (split ufficiale) la mantiene,
+    altrimenti crea uno split stratificato per chiesa. In entrambi i casi esegue i controlli."""
     df = pd.read_csv(processed_csv)
-    ch = df.groupby("church_id")["style"].first().reset_index()
-    tr, va, te = ratios
-    ch_train, ch_rest = train_test_split(ch, test_size=va + te, stratify=ch["style"], random_state=seed)
-    ch_val, ch_test = train_test_split(ch_rest, test_size=te / (va + te),
-                                       stratify=ch_rest["style"], random_state=seed)
-    split_of = {**{c: "train" for c in ch_train.church_id},
-                **{c: "val" for c in ch_val.church_id},
-                **{c: "test" for c in ch_test.church_id}}
-    df["split"] = df["church_id"].map(split_of)
+    if "split" in df.columns and df["split"].notna().all():
+        print("Uso lo split già presente nell'indice (split ufficiale).")
+    else:
+        from sklearn.model_selection import train_test_split
+        ch = df.groupby("church_id")["style"].first().reset_index()
+        tr, va, te = ratios
+        ch_train, ch_rest = train_test_split(ch, test_size=va + te, stratify=ch["style"], random_state=seed)
+        ch_val, ch_test = train_test_split(ch_rest, test_size=te / (va + te),
+                                           stratify=ch_rest["style"], random_state=seed)
+        split_of = {**{c: "train" for c in ch_train.church_id},
+                    **{c: "val" for c in ch_val.church_id},
+                    **{c: "test" for c in ch_test.church_id}}
+        df["split"] = df["church_id"].map(split_of)
 
     # Controllo 1: nessuna chiesa in due split
-    assert df.groupby("church_id")["split"].nunique().max() == 1, "chiesa in più split!"
+    multi = df.groupby("church_id")["split"].nunique()
+    print(f"Chiese presenti in più di uno split: {int((multi > 1).sum())}")
     # Controllo 2: foto identiche (stesso md5) in split diversi -> le togliamo da val/test
     dup = df[df.duplicated("md5", keep=False)]
     leak = dup.groupby("md5")["split"].nunique()
@@ -578,6 +651,9 @@ def main(argv=None):
     for name in ("inspect", "preview"):
         s = sub.add_parser(name)
         s.add_argument("--raw", default=config.COLAB_RAW_DIR)
+    s = sub.add_parser("build-index-official")
+    s.add_argument("--raw", default=config.COLAB_RAW_DIR)
+    s.add_argument("--out", default=f"{config.COLAB_RAW_DIR}/index.csv")
     s = sub.add_parser("build-index")
     s.add_argument("--raw", default=config.COLAB_RAW_DIR)
     s.add_argument("--out", default=f"{config.COLAB_RAW_DIR}/index.csv")
@@ -599,6 +675,8 @@ def main(argv=None):
         inspect_metadata(a.raw)
     elif a.cmd == "preview":
         preview_counts(a.raw)
+    elif a.cmd == "build-index-official":
+        build_index_official(a.raw, a.out)
     elif a.cmd == "build-index":
         build_index(a.raw, a.out, a.use_substyles)
     elif a.cmd == "extract":

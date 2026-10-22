@@ -33,7 +33,12 @@ ZENODO_BASE = f"https://zenodo.org/records/{ZENODO_RECORD}/files"
 IMG_SHORT_SIDE = 256
 JPEG_QUALITY = 90
 
-# Split per CHIESA (non per foto): train / validation / test.
+# Split ufficiale WikiChurches-4 (file labels/wc4_{train,val,test}.txt di labels.zip):
+# divisione per chiesa decisa dagli autori, sotto-stili già ricondotti ai 4 stili.
+OFFICIAL_SPLIT = "wc4"
+
+# Usato solo se si costruisce uno split proprio (build_index + make_splits):
+# divisione per CHIESA (non per foto) train / validation / test.
 SPLIT_RATIOS = (0.70, 0.15, 0.15)
 
 # Seme unico per tutti gli esperimenti (riproducibilità).

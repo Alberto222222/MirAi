@@ -15,7 +15,7 @@ Foto ──► VGG-16 pre-addestrata (fine-tuning blocco 5) ──► softmax a 
 
 | Fase | Contenuto | Stato |
 |---|---|---|
-| 1. Dataset | WikiChurches (4 stili), split per chiesa 70/15/15 | ⏳ |
+| 1. Dataset | WikiChurches-4, split ufficiale per chiesa (7.526 immagini) | ⏳ |
 | 2. Baseline | classe maggioritaria + piccola CNN da zero | ☐ |
 | 3. Modello M1 | VGG-16 congelata + testa GAP → Dense softmax | ☐ |
 | 4. Modello M2 | fine-tuning del blocco 5 | ☐ |

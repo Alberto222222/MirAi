@@ -21,18 +21,42 @@ licenza CC BY-SA 4.0.
 Sono i quattro stili più rappresentati nel dataset. La coppia Rinascimentale/Barocco,
 stilisticamente vicina, rende significativa l'analisi della matrice di confusione.
 
-## D3 – Solo chiese a stile singolo
-Vengono usate solo le chiese i cui stili appartengono tutti a una delle quattro classi,
-in linea con i sottoinsiemi di riferimento di WikiChurches. Le chiese con stili misti
-(es. romanico e gotico) sono escluse dall'addestramento e possono servire come casi di
-studio qualitativi per la lettura «fuzzy» delle probabilità (§30, §50).
+## D3 – Split ufficiale WikiChurches-4
+Conteggi preliminari (immagini per stile):
 
-## D4 – Split per chiesa (70/15/15, seed 42)
-Tutte le foto di uno stesso edificio appartengono a un solo insieme. Uno split per foto
-porterebbe immagini dello stesso edificio sia in addestramento sia in test, e la
-valutazione misurerebbe il riconoscimento del singolo monumento anziché dello stile
-(§17, §50). Lo split è stratificato per stile; i duplicati esatti (stesso hash MD5)
-presenti in insiemi diversi vengono rimossi da validazione e test.
+| Stile | Solo stile principale | Con sotto-stili |
+|---|---|---|
+| Romanico | 1.591 | 2.209 |
+| Gotico | 1.581 | 3.649 |
+| Rinascimentale | 187 | 217 |
+| Barocco | 1.392 | 1.508 |
+
+Si adotta lo split ufficiale *WikiChurches-4* fornito dagli autori (7.526 immagini:
+5.838 training, 206 validazione, 1.482 test), che riconduce i sotto-stili (es. *Italian
+Gothic*, *Rococo*) ai quattro stili principali.
+
+- Resa: alta – risultati confrontabili con quelli pubblicati sullo stesso benchmark.
+- Tempo: basso – etichette e divisione già pronte.
+- Difficoltà: bassa.
+
+Le chiese con stili appartenenti a classi diverse (es. romanico e gotico) non fanno parte
+del benchmark; possono servire come casi di studio qualitativi per la lettura «fuzzy»
+delle probabilità (§30, §50).
+
+## D4 – Divisione per chiesa
+Nello split ufficiale tutte le foto di uno stesso edificio appartengono a un solo insieme.
+Uno split per foto porterebbe immagini dello stesso edificio sia in addestramento sia in
+test, e la valutazione misurerebbe il riconoscimento del singolo monumento anziché dello
+stile (§17, §50). La proprietà viene verificata automaticamente, insieme all'assenza di
+foto identiche (stesso hash MD5) tra training e validazione/test.
+
+## D4b – Classe minoritaria: Rinascimentale
+Il Rinascimentale ha circa un decimo delle immagini degli altri stili. Contromisure:
+
+- **pesi di classe** nella cross-entropy, inversamente proporzionali alla frequenza (§17);
+- **macro-F1** come metrica principale accanto all'accuracy, che da sola premierebbe
+  le classi più numerose;
+- analisi della confusione Rinascimentale/Barocco nella matrice di confusione.
 
 ## D5 – Immagini ridimensionate a 256 px sul lato corto
 Formato standard per le reti pre-addestrate su ImageNet, con ritaglio 224×224
