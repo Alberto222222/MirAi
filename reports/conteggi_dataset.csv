@@ -1,0 +1,8 @@
+,immagini,immagini,immagini,immagini,chiese,chiese,chiese,chiese
+split,train,val,test,totale,train,val,test,totale
+style,,,,,,,,
+Romanesque,1653,50,503,2206,1635,50,498,2183
+Gothic,3041,52,506,3599,2993,50,500,3543
+Renaissance,64,52,100,216,59,49,100,208
+Baroque,1080,52,372,1504,1063,50,370,1483
+totale,5838,206,1481,7525,5750,199,1468,7417
