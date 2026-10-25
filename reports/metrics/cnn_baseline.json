@@ -1,58 +1,58 @@
 {
  "modello": "CNN baseline",
- "accuracy": 0.33963538149898714,
- "macro_f1": 0.1267641129032258,
- "balanced_accuracy": 0.25,
+ "accuracy": 0.45442268737339636,
+ "macro_f1": 0.4374744672893241,
+ "balanced_accuracy": 0.47703456003322997,
  "per_classe": {
   "Romanesque": {
-   "precision": 0.33963538149898714,
-   "recall": 1.0,
-   "f1-score": 0.5070564516129032,
+   "precision": 0.44565217391304346,
+   "recall": 0.48906560636182905,
+   "f1-score": 0.4663507109004739,
    "support": 503.0
   },
   "Gothic": {
-   "precision": 0.0,
-   "recall": 0.0,
-   "f1-score": 0.0,
+   "precision": 0.6338028169014085,
+   "recall": 0.44466403162055335,
+   "f1-score": 0.5226480836236934,
    "support": 506.0
   },
   "Renaissance": {
-   "precision": 0.0,
-   "recall": 0.0,
-   "f1-score": 0.0,
+   "precision": 0.2645739910313901,
+   "recall": 0.59,
+   "f1-score": 0.3653250773993808,
    "support": 100.0
   },
   "Baroque": {
-   "precision": 0.0,
-   "recall": 0.0,
-   "f1-score": 0.0,
+   "precision": 0.4074074074074074,
+   "recall": 0.3844086021505376,
+   "f1-score": 0.39557399723374825,
    "support": 372.0
   }
  },
  "matrice_confusione": [
   [
-   503,
-   0,
-   0,
-   0
+   246,
+   108,
+   46,
+   103
   ],
   [
-   506,
-   0,
-   0,
-   0
+   171,
+   225,
+   25,
+   85
   ],
   [
-   100,
-   0,
-   0,
-   0
+   19,
+   2,
+   59,
+   20
   ],
   [
-   372,
-   0,
-   0,
-   0
+   116,
+   20,
+   93,
+   143
   ]
  ]
 }

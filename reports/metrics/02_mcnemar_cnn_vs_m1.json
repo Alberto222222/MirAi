@@ -1,7 +1,7 @@
 {
- "b": 99,
- "c": 446,
+ "b": 206,
+ "c": 376,
  "metodo": "chi-quadro con correzione",
- "statistica": 219.6623853211009,
- "p_value": 1.071583980637088e-49
+ "statistica": 49.07388316151203,
+ "p_value": 2.4650050728017156e-12
 }
