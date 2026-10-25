@@ -1,8 +1,7 @@
 # Scelte progettuali
 
 Ogni scelta è valutata secondo tre criteri: **resa** (qualità del risultato),
-**tempo** di realizzazione e **difficoltà** implementativa. I riferimenti «§»
-rimandano ai paragrafi della dispensa del corso IARTS.
+**tempo** di realizzazione e **difficoltà** implementativa.
 
 ## D1 – Dataset: WikiChurches
 L'*Architectural Heritage Elements Dataset* (Llamas et al., 2017) raccoglie immagini
@@ -41,20 +40,20 @@ Gothic*, *Rococo*) ai quattro stili principali.
 
 Le chiese con stili appartenenti a classi diverse (es. romanico e gotico) non fanno parte
 del benchmark; possono servire come casi di studio qualitativi per la lettura «fuzzy»
-delle probabilità (§30, §50).
+delle probabilità.
 
 ## D4 – Divisione per chiesa
 Nello split ufficiale tutte le foto di uno stesso edificio appartengono a un solo insieme.
 Uno split per foto porterebbe immagini dello stesso edificio sia in addestramento sia in
 test, e la valutazione misurerebbe il riconoscimento del singolo monumento anziché dello
-stile (§17, §50). La proprietà viene verificata automaticamente, insieme all'assenza di
+stile. La proprietà viene verificata automaticamente, insieme all'assenza di
 foto identiche (stesso hash MD5) tra training e validazione/test.
 
 ## D4b – Classe minoritaria: Rinascimentale
 Nello split ufficiale il training set contiene 64 immagini rinascimentali contro 3.041
 gotiche (rapporto 1:47); validazione e test sono invece più bilanciati. Contromisure:
 
-- **pesi di classe** nella cross-entropy (§17). I pesi «bilanciati» n / (k · n_classe)
+- **pesi di classe** nella cross-entropy. I pesi «bilanciati» n / (k · n_classe)
   darebbero al Rinascimentale peso 22,8: ogni sua immagine conterebbe quanto 47 immagini
   gotiche e, con soli 64 esempi, il modello tenderebbe a sovra-predire la classe.
   Si usa la **radice** dei pesi bilanciati (Romanico 0,94 · Gotico 0,69 ·
@@ -67,7 +66,7 @@ gotiche (rapporto 1:47); validazione e test sono invece più bilanciati. Controm
 
 ## D5 – Immagini ridimensionate a 256 px sul lato corto
 Formato standard per le reti pre-addestrate su ImageNet, con ritaglio 224×224
-in addestramento (§44). Le immagini sono archiviate in un unico file `.tar` su Google
+in addestramento. Le immagini sono archiviate in un unico file `.tar` su Google
 Drive, più rapido da trasferire di migliaia di file singoli.
 
 ## D6 – Perimetro del progetto
@@ -77,6 +76,6 @@ Per privilegiare un sistema completo e valutato in modo rigoroso sono stati escl
   nelle foto condivise e indicano la posizione del fotografo, non del monumento;
 - **ottimizzazione degli iperparametri con algoritmo genetico**: ogni valutazione
   richiederebbe un addestramento della VGG-16, con un costo non compatibile con le
-  risorse disponibili; si usano valori di riferimento ed early stopping (§17, §18);
+  risorse disponibili; si usano valori di riferimento ed early stopping;
 - **generazione del testo con un LLM**: sostituita da testi descrittivi per stile,
   che non rischiano di introdurre informazioni errate.

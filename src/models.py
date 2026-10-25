@@ -1,11 +1,10 @@
 """Architetture usate nel progetto.
 
 - build_cnn_baseline: piccola CNN addestrata da zero, catena
-  convoluzione -> pooling ripetuta -> GAP -> Dropout -> softmax
-  (slide 10-- DEEP_L p31-62; Neural Networks.pdf p162-174).
+  convoluzione -> pooling ripetuta -> GAP -> Dropout -> softmax.
 - build_vgg16_head (M1): VGG-16 pre-addestrata su ImageNet e congelata, con una
-  nuova testa GAP -> Dropout -> Dense softmax (11-- Explainability p4, p15-17).
-  Il Global Average Pooling prima del Dense rende possibile il CAM (p34, p38).
+  nuova testa GAP -> Dropout -> Dense softmax.
+  Il Global Average Pooling prima del Dense rende possibile il Class Activation Mapping.
 
 Il modello VGG è costruito "piatto" (gli strati della VGG sono strati del modello
 stesso): così Grad-CAM può accedere direttamente a 'block5_conv3'.

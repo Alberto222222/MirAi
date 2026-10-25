@@ -12,9 +12,9 @@ def train_model(model: keras.Model, train_ds, val_ds, name: str, epochs: int, lr
                 models_dir: str | Path, reports_dir: str | Path, patience: int) -> dict:
     """Addestra il modello e restituisce la storia dell'addestramento.
 
-    - loss: cross-entropy categoriale sparsa (§17), pesata per classe tramite i pesi nel dataset;
-    - ottimizzatore: Adam (discesa del gradiente con momento adattivo, §16);
-    - early stopping sulla loss di validazione con ripristino dei pesi migliori (§17);
+    - loss: cross-entropy categoriale sparsa, pesata per classe tramite i pesi nel dataset;
+    - ottimizzatore: Adam (discesa del gradiente con momento adattivo);
+    - early stopping sulla loss di validazione con ripristino dei pesi migliori;
     - learning rate dimezzato quando la validazione smette di migliorare;
     - a fine addestramento il modello torna ai pesi dell'epoca migliore e viene salvato
       in models_dir come <name>.keras.

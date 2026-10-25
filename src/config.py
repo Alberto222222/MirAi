@@ -48,13 +48,13 @@ SEED = 42
 IMG_SIZE = 224          # ingresso delle reti (ritaglio dalle immagini a 256 px)
 BATCH_SIZE = 32
 
-# Pesi di classe nella cross-entropy (§17): "balanced" = n / (k * n_classe),
+# Pesi di classe nella cross-entropy: "balanced" = n / (k * n_classe),
 # "sqrt" = radice dei pesi bilanciati (più morbidi), "none" = nessun peso.
 # Con lo split ufficiale (train: Romanico 1653, Gotico 3041, Rinascimentale 64, Barocco 1080)
 # "balanced" darebbe al Rinascimentale peso 22.8; "sqrt" lo porta a 4.8 (Gotico 0.69).
 CLASS_WEIGHT_MODE = "sqrt"
 
-# Baseline: piccola CNN addestrata da zero (§20, slide 10-- DEEP_L)
+# Baseline: piccola CNN addestrata da zero
 CNN_EPOCHS = 30
 CNN_LR = 1e-3
 
@@ -63,7 +63,7 @@ HEAD_EPOCHS = 20
 HEAD_LR = 1e-3
 HEAD_DROPOUT = 0.5
 
-# Early stopping sulla loss di validazione (§17)
+# Early stopping sulla loss di validazione
 PATIENCE = 4
 
 # --- Percorsi Colab ---------------------------------------------------------

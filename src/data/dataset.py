@@ -6,9 +6,8 @@ Flusso per ogni immagine:
       val/test:   ritaglio centrale 224x224
     -> pre-elaborazione richiesta dal modello ("vgg" oppure "raw")
 
-La data augmentation riprende l'idea delle slide sul riconoscimento dell'«8»
-(Neural Networks.pdf p163): mostrare alla rete lo stesso oggetto in posizioni
-e condizioni diverse, senza raccogliere nuove foto.
+La data augmentation mostra alla rete lo stesso edificio in inquadrature e
+condizioni di luce diverse, senza raccogliere nuove foto.
 """
 from __future__ import annotations
 

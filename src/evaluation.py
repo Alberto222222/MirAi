@@ -2,8 +2,7 @@
 
 Metriche: accuracy, macro-F1 (media non pesata sulle classi: non premia le classi
 numerose), balanced accuracy, precision/recall/F1 per classe, matrice di confusione.
-Confronto tra due modelli sullo stesso test set: test di McNemar
-(Neural Networks.pdf p110).
+Confronto tra due modelli sullo stesso test set: test di McNemar.
 """
 from __future__ import annotations
 
