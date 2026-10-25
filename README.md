@@ -16,9 +16,9 @@ Foto ──► VGG-16 pre-addestrata (fine-tuning blocco 5) ──► softmax a 
 | Fase | Contenuto | Stato |
 |---|---|---|
 | 1. Dataset | WikiChurches-4, split ufficiale per chiesa (7.526 immagini) | ✅ |
-| 2. Baseline | classe maggioritaria + piccola CNN da zero | ⏳ |
-| 3. Modello M1 | VGG-16 congelata + testa GAP → Dense softmax | ⏳ |
-| 4. Modello M2 | fine-tuning del blocco 5 | ☐ |
+| 2. Baseline | classe maggioritaria + piccola CNN da zero | ✅ |
+| 3. Modello M1 | VGG-16 congelata + testa GAP → BatchNorm → Dense(256) → softmax | ✅ |
+| 4. Modello M2 | fine-tuning del blocco 5 + analisi degli errori | ⏳ |
 | 5. Valutazione | accuracy, P/R/F1 per classe, matrice di confusione, McNemar | ☐ |
 | 6. Explainable AI | Grad-CAM, LIME, deletion test | ☐ |
 | 7. App | Gradio: stile + heatmap + descrizione di stile, elementi e monumento | ☐ |
@@ -33,6 +33,7 @@ MirAi/
 │   ├── models.py         CNN baseline e VGG-16 con nuova testa (M1)
 │   ├── train.py          addestramento: cross-entropy pesata, Adam, early stopping
 │   ├── evaluation.py     metriche, matrici di confusione, curve, test di McNemar
+│   ├── analysis.py       analisi degli errori per sotto-stile, Paese e posizione
 │   ├── colab_git.py      commit e push da Colab senza esporre il token
 │   └── data/
 │       ├── wikichurches.py   download, indice, ridimensionamento, split, report
@@ -50,6 +51,7 @@ Le immagini **non** stanno su GitHub: sono su Google Drive
 1. Nei *Secrets* di Colab crea `GITHUB_TOKEN` (token con accesso a questo repository).
 2. `notebooks/01_dataset.ipynb` (CPU): prepara il dataset e lo salva su Google Drive.
 3. `notebooks/02_baseline_m1.ipynb` (GPU): baseline, modello M1 e confronto.
+4. `notebooks/03_finetuning_errori.ipynb` (GPU): fine-tuning (M2) e analisi degli errori.
 
 Ogni notebook si esegue dall'alto in basso.
 

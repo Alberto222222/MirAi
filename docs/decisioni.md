@@ -108,3 +108,29 @@ Diagnosi:
   in valutazione più rapide a stabilizzarsi).
 - M1: testa GAP → **BatchNorm** → **Dense(256, ReLU)** → Dropout(0,5) → Dense softmax;
   epoche 20 → 30, pazienza 4 → 6. La VGG-16 resta congelata.
+
+**Risultati dell'iterazione 2 (configurazione definitiva del notebook 02)**
+
+| Modello | Accuracy | Macro-F1 | Balanced accuracy | F1 Rom. | F1 Got. | F1 Rin. | F1 Bar. |
+|---|---|---|---|---|---|---|---|
+| Classe maggioritaria | 0,342 | 0,127 | 0,250 | 0,000 | 0,509 | 0,000 | 0,000 |
+| CNN da zero | 0,454 | 0,437 | 0,477 | 0,466 | 0,523 | 0,365 | 0,396 |
+| M1 VGG-16 congelata | 0,569 | 0,511 | 0,511 | 0,631 | 0,566 | 0,333 | 0,513 |
+
+McNemar CNN vs M1: b = 206, c = 376, p ≈ 2,5·10⁻¹². La CNN ora impara (25 epoche, migliore la 17);
+M1 parte da una loss di 1,03 ma va in overfitting dopo 2 epoche (loss di training in calo, di
+validazione in salita): le feature congelate di ImageNet sono il limite. Errore principale di M1:
+il 47% delle immagini gotiche è classificato come romanico.
+
+## D8 – Fine-tuning dell'ultimo blocco (M2)
+- Si parte dai pesi di M1 e si sblocca solo `block5` (3 strati convoluzionali, ~7 milioni di pesi):
+  gli strati iniziali rappresentano bordi e texture, generici e già adatti; quelli finali forme e
+  parti, da specializzare su archi, finestre e facciate.
+- Learning rate 1·10⁻⁵ (100 volte più basso di quello della testa), per non distruggere le
+  feature pre-addestrate; massimo 20 epoche, pazienza 5.
+- Confronto M1 vs M2 con il test di McNemar sullo stesso test set.
+
+## D9 – Analisi degli errori con i metadati delle chiese
+Oltre alla matrice di confusione, gli errori vengono analizzati con informazioni che il modello
+non vede: sotto-stile Wikidata (per verificare se l'errore Gotico → Romanico è concentrato in
+sotto-stili come il *Brick Gothic*), Paese e posizione geografica, confidenza della predizione.

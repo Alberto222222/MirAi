@@ -52,6 +52,26 @@ def build_vgg16_head(size: int = config.IMG_SIZE, num_classes: int = NUM_CLASSES
     return keras.Model(base.input, out, name="vgg16_m1")
 
 
+def load(path) -> keras.Model:
+    """Carica un modello salvato in formato .keras."""
+    return keras.models.load_model(str(path))
+
+
+def unfreeze(model: keras.Model, prefix: str = config.FT_UNFREEZE_PREFIX) -> list[str]:
+    """Fine-tuning: rende addestrabili gli strati della VGG il cui nome inizia con prefix
+    (es. 'block5'); gli altri strati convoluzionali restano congelati, la testa resta addestrabile."""
+    head = {"gap", "head_bn", "head_dense", "dropout", "predictions"}
+    sbloccati = []
+    for layer in model.layers:
+        if layer.name.startswith(prefix):
+            layer.trainable = True
+            if layer.weights:
+                sbloccati.append(layer.name)
+        elif layer.name not in head:
+            layer.trainable = False
+    return sbloccati
+
+
 def count_params(model: keras.Model) -> dict[str, int]:
     trainable = sum(int(np.prod(w.shape)) for w in model.trainable_weights)
     frozen = sum(int(np.prod(w.shape)) for w in model.non_trainable_weights)

@@ -72,6 +72,14 @@ HEAD_HIDDEN = 256
 HEAD_DROPOUT = 0.5
 HEAD_PATIENCE = 6
 
+# M2: fine-tuning. Si parte da M1 e si sblocca l'ultimo blocco convoluzionale della VGG-16
+# (block5_conv1..3, ~7 milioni di pesi). Learning rate 100 volte più basso di quello della
+# testa, per adattare i filtri senza distruggere quanto appreso su ImageNet.
+FT_UNFREEZE_PREFIX = "block5"
+FT_LR = 1e-5
+FT_EPOCHS = 20
+FT_PATIENCE = 5
+
 # Early stopping sulla loss di validazione (valore predefinito)
 PATIENCE = 4
 

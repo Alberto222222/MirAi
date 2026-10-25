@@ -49,6 +49,11 @@ def save_json(obj: dict, path: str | Path) -> None:
         json.dump(obj, f, indent=1)
 
 
+def load_json(path: str | Path) -> dict:
+    with open(path) as f:
+        return json.load(f)
+
+
 def save_predictions(df: pd.DataFrame, probs: np.ndarray, path: str | Path) -> pd.DataFrame:
     """Salva per ogni immagine di test etichetta, predizione e probabilità (servono a McNemar e alla XAI)."""
     out = df[["path", "label", "style", "church_id"]].copy().reset_index(drop=True)
