@@ -1,0 +1,58 @@
+{
+ "modello": "CNN baseline",
+ "accuracy": 0.33963538149898714,
+ "macro_f1": 0.1267641129032258,
+ "balanced_accuracy": 0.25,
+ "per_classe": {
+  "Romanesque": {
+   "precision": 0.33963538149898714,
+   "recall": 1.0,
+   "f1-score": 0.5070564516129032,
+   "support": 503.0
+  },
+  "Gothic": {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1-score": 0.0,
+   "support": 506.0
+  },
+  "Renaissance": {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1-score": 0.0,
+   "support": 100.0
+  },
+  "Baroque": {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1-score": 0.0,
+   "support": 372.0
+  }
+ },
+ "matrice_confusione": [
+  [
+   503,
+   0,
+   0,
+   0
+  ],
+  [
+   506,
+   0,
+   0,
+   0
+  ],
+  [
+   100,
+   0,
+   0,
+   0
+  ],
+  [
+   372,
+   0,
+   0,
+   0
+  ]
+ ]
+}

@@ -1,0 +1,4 @@
+modello,accuracy,macro-F1,balanced accuracy,F1 Romanico,F1 Gotico,F1 Rinascimentale,F1 Barocco
+Classe maggioritaria,0.342,0.127,0.25,0.0,0.509,0.0,0.0
+CNN baseline,0.34,0.127,0.25,0.507,0.0,0.0,0.0
+M1 VGG-16 congelata,0.574,0.503,0.491,0.625,0.593,0.299,0.497

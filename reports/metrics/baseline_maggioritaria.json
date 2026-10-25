@@ -1,0 +1,58 @@
+{
+ "modello": "Classe maggioritaria",
+ "accuracy": 0.3416610398379473,
+ "macro_f1": 0.12732762959235028,
+ "balanced_accuracy": 0.25,
+ "per_classe": {
+  "Romanesque": {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1-score": 0.0,
+   "support": 503.0
+  },
+  "Gothic": {
+   "precision": 0.3416610398379473,
+   "recall": 1.0,
+   "f1-score": 0.5093105183694011,
+   "support": 506.0
+  },
+  "Renaissance": {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1-score": 0.0,
+   "support": 100.0
+  },
+  "Baroque": {
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1-score": 0.0,
+   "support": 372.0
+  }
+ },
+ "matrice_confusione": [
+  [
+   0,
+   503,
+   0,
+   0
+  ],
+  [
+   0,
+   506,
+   0,
+   0
+  ],
+  [
+   0,
+   100,
+   0,
+   0
+  ],
+  [
+   0,
+   372,
+   0,
+   0
+  ]
+ ]
+}
