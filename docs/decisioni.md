@@ -51,9 +51,16 @@ stile (§17, §50). La proprietà viene verificata automaticamente, insieme all'
 foto identiche (stesso hash MD5) tra training e validazione/test.
 
 ## D4b – Classe minoritaria: Rinascimentale
-Il Rinascimentale ha circa un decimo delle immagini degli altri stili. Contromisure:
+Nello split ufficiale il training set contiene 64 immagini rinascimentali contro 3.041
+gotiche (rapporto 1:47); validazione e test sono invece più bilanciati. Contromisure:
 
-- **pesi di classe** nella cross-entropy, inversamente proporzionali alla frequenza (§17);
+- **pesi di classe** nella cross-entropy (§17). I pesi «bilanciati» n / (k · n_classe)
+  darebbero al Rinascimentale peso 22,8: ogni sua immagine conterebbe quanto 47 immagini
+  gotiche e, con soli 64 esempi, il modello tenderebbe a sovra-predire la classe.
+  Si usa la **radice** dei pesi bilanciati (Romanico 0,94 · Gotico 0,69 ·
+  Rinascimentale 4,78 · Barocco 1,16), che riduce lo squilibrio senza esasperarlo;
+- **data augmentation** (ritaglio casuale, ribaltamento orizzontale, luminosità e
+  contrasto), che moltiplica le varianti delle poche immagini disponibili;
 - **macro-F1** come metrica principale accanto all'accuracy, che da sola premierebbe
   le classi più numerose;
 - analisi della confusione Rinascimentale/Barocco nella matrice di confusione.

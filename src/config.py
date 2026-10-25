@@ -44,9 +44,33 @@ SPLIT_RATIOS = (0.70, 0.15, 0.15)
 # Seme unico per tutti gli esperimenti (riproducibilità).
 SEED = 42
 
+# --- Addestramento ----------------------------------------------------------
+IMG_SIZE = 224          # ingresso delle reti (ritaglio dalle immagini a 256 px)
+BATCH_SIZE = 32
+
+# Pesi di classe nella cross-entropy (§17): "balanced" = n / (k * n_classe),
+# "sqrt" = radice dei pesi bilanciati (più morbidi), "none" = nessun peso.
+# Con lo split ufficiale (train: Romanico 1653, Gotico 3041, Rinascimentale 64, Barocco 1080)
+# "balanced" darebbe al Rinascimentale peso 22.8; "sqrt" lo porta a 4.8 (Gotico 0.69).
+CLASS_WEIGHT_MODE = "sqrt"
+
+# Baseline: piccola CNN addestrata da zero (§20, slide 10-- DEEP_L)
+CNN_EPOCHS = 30
+CNN_LR = 1e-3
+
+# M1: VGG-16 pre-addestrata e congelata + nuova testa GAP -> Dropout -> Dense softmax
+HEAD_EPOCHS = 20
+HEAD_LR = 1e-3
+HEAD_DROPOUT = 0.5
+
+# Early stopping sulla loss di validazione (§17)
+PATIENCE = 4
+
 # --- Percorsi Colab ---------------------------------------------------------
 COLAB_REPO_DIR = "/content/mirai"
 COLAB_RAW_DIR = "/content/raw"              # disco locale, veloce, temporaneo
 COLAB_PROCESSED_DIR = "/content/processed"  # immagini ridimensionate
 DRIVE_DATA_DIR = "/content/drive/MyDrive/mirai_data"  # persistente
+DRIVE_MODELS_DIR = f"{DRIVE_DATA_DIR}/models"         # modelli addestrati (.keras)
 PROCESSED_TAR_NAME = "wikichurches4_256.tar"
+SPLITS_CSV = "data/splits/splits.csv"
