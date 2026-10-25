@@ -54,16 +54,25 @@ BATCH_SIZE = 32
 # "balanced" darebbe al Rinascimentale peso 22.8; "sqrt" lo porta a 4.8 (Gotico 0.69).
 CLASS_WEIGHT_MODE = "sqrt"
 
-# Baseline: piccola CNN addestrata da zero
-CNN_EPOCHS = 30
+# Baseline: piccola CNN addestrata da zero.
+# Iterazione 1 (30 epoche, pazienza 4): fermata all'epoca 6 senza aver imparato
+# (predice una sola classe) -> più epoche, più pazienza, BatchNorm più reattiva.
+CNN_EPOCHS = 40
 CNN_LR = 1e-3
+CNN_PATIENCE = 8
+CNN_BN_MOMENTUM = 0.9
 
-# M1: VGG-16 pre-addestrata e congelata + nuova testa GAP -> Dropout -> Dense softmax
-HEAD_EPOCHS = 20
+# M1: VGG-16 pre-addestrata e congelata + nuova testa
+#     GAP -> BatchNorm -> Dense(256, ReLU) -> Dropout -> Dense softmax.
+# Iterazione 1 (testa GAP -> Dropout -> Dense): loss iniziale 4.5 e accuracy di training 0.68
+# (underfitting) -> normalizzazione delle feature e uno strato nascosto nella testa.
+HEAD_EPOCHS = 30
 HEAD_LR = 1e-3
+HEAD_HIDDEN = 256
 HEAD_DROPOUT = 0.5
+HEAD_PATIENCE = 6
 
-# Early stopping sulla loss di validazione
+# Early stopping sulla loss di validazione (valore predefinito)
 PATIENCE = 4
 
 # --- Percorsi Colab ---------------------------------------------------------

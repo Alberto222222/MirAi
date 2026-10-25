@@ -79,3 +79,32 @@ Per privilegiare un sistema completo e valutato in modo rigoroso sono stati escl
   risorse disponibili; si usano valori di riferimento ed early stopping;
 - **generazione del testo con un LLM**: sostituita da testi descrittivi per stile,
   che non rischiano di introdurre informazioni errate.
+
+## D7 – Baseline e modello M1: dalla prima alla seconda iterazione
+Test set ufficiale: 1.481 immagini (Romanico 503, Gotico 506, Rinascimentale 100, Barocco 372).
+
+**Iterazione 1**
+
+| Modello | Accuracy | Macro-F1 | Balanced accuracy |
+|---|---|---|---|
+| Classe maggioritaria (sempre Gotico) | 0,342 | 0,127 | 0,250 |
+| CNN da zero (30 epoche max, pazienza 4) | 0,340 | 0,127 | 0,250 |
+| M1: VGG-16 congelata + GAP → Dropout → Dense | 0,574 | 0,503 | 0,491 |
+
+McNemar CNN vs M1: b = 99, c = 446, p ≈ 1·10⁻⁴⁹.
+
+Diagnosi:
+- **CNN**: loss di training ferma a ~0,99 e accuracy di validazione costante a 0,24; l'early
+  stopping l'ha interrotta all'epoca 6 (migliore: 2) e il modello predice una sola classe
+  (Romanico). Non è una baseline significativa ma un addestramento interrotto troppo presto:
+  una rete addestrata da zero richiede più epoche, e la validazione (206 immagini) è rumorosa.
+- **M1**: loss iniziale 4,48 (il valore atteso per 4 classi equiprobabili è ln 4 ≈ 1,39), segno
+  di feature VGG con valori grandi e non normalizzati; accuracy di training ferma a 0,68
+  (underfitting della testa lineare); forte sovra-predizione del Romanico (41% dei gotici e
+  38% dei barocchi classificati come romanici).
+
+**Correzioni (iterazione 2)**
+- CNN: epoche 30 → 40, pazienza 4 → 8, momentum della BatchNorm 0,99 → 0,9 (statistiche usate
+  in valutazione più rapide a stabilizzarsi).
+- M1: testa GAP → **BatchNorm** → **Dense(256, ReLU)** → Dropout(0,5) → Dense softmax;
+  epoche 20 → 30, pazienza 4 → 6. La VGG-16 resta congelata.
