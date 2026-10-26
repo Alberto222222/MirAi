@@ -1,0 +1,12 @@
+{
+ "riferimento": "M3 (03b) + TTA",
+ "macro_f1_val_riferimento": 0.6391190075014905,
+ "controllo": "M3 controllo + TTA",
+ "macro_f1_val_controllo": 0.5972400234059129,
+ "rumore": 0.041878984095577665,
+ "nuovo": "M3 + MonuMAI + TTA",
+ "macro_f1_val_nuovo": 0.5728512017230065,
+ "delta": -0.06626780577848401,
+ "soglia": 0.041878984095577665,
+ "accettato": false
+}

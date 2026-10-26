@@ -1,0 +1,5 @@
+modello,accuracy,macro-F1,balanced accuracy,F1 Romanico,F1 Gotico,F1 Rinascimentale,F1 Barocco
+M3 (03b) + TTA,0.677,0.588,0.577,0.678,0.711,0.272,0.692
+M3 controllo + TTA,0.693,0.6,0.591,0.71,0.714,0.262,0.714
+M3 + MonuMAI,0.686,0.606,0.592,0.693,0.722,0.318,0.69
+M3 + MonuMAI + TTA,0.689,0.61,0.595,0.69,0.722,0.321,0.706
