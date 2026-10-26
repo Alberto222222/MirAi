@@ -1,0 +1,9 @@
+modello,accuracy,macro-F1,balanced accuracy,F1 Romanico,F1 Gotico,F1 Rinascimentale,F1 Barocco
+Classe maggioritaria,0.342,0.127,0.25,0.0,0.509,0.0,0.0
+CNN baseline,0.454,0.437,0.477,0.466,0.523,0.365,0.396
+M1 VGG-16 congelata,0.569,0.511,0.511,0.631,0.566,0.333,0.513
+M2 VGG-16 blocco 5,0.653,0.585,0.573,0.662,0.67,0.327,0.681
+M3 VGG-16 blocchi 4-5,0.676,0.594,0.581,0.678,0.708,0.299,0.691
+M3 VGG-16 blocchi 4-5 + TTA,0.677,0.588,0.577,0.678,0.711,0.272,0.692
+ConvNeXt-Tiny,0.631,0.536,0.535,0.594,0.677,0.205,0.668
+ConvNeXt-Tiny + TTA,0.63,0.532,0.532,0.591,0.675,0.192,0.671

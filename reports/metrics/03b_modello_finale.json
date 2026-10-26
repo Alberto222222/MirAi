@@ -1,0 +1,58 @@
+{
+ "modello": "M3 VGG-16 blocchi 4-5 + TTA",
+ "accuracy": 0.6765698852126941,
+ "macro_f1": 0.5881889053735929,
+ "balanced_accuracy": 0.5774789148149059,
+ "per_classe": {
+  "Romanesque": {
+   "precision": 0.6960167714884696,
+   "recall": 0.6600397614314115,
+   "f1-score": 0.6775510204081633,
+   "support": 503.0
+  },
+  "Gothic": {
+   "precision": 0.6649484536082474,
+   "recall": 0.7648221343873518,
+   "f1-score": 0.7113970588235294,
+   "support": 506.0
+  },
+  "Renaissance": {
+   "precision": 0.68,
+   "recall": 0.17,
+   "f1-score": 0.272,
+   "support": 100.0
+  },
+  "Baroque": {
+   "precision": 0.6700251889168766,
+   "recall": 0.7150537634408602,
+   "f1-score": 0.6918075422626788,
+   "support": 372.0
+  }
+ },
+ "matrice_confusione": [
+  [
+   332,
+   135,
+   1,
+   35
+  ],
+  [
+   79,
+   387,
+   0,
+   40
+  ],
+  [
+   12,
+   15,
+   17,
+   56
+  ],
+  [
+   54,
+   45,
+   7,
+   266
+  ]
+ ]
+}

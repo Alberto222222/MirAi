@@ -1,0 +1,10 @@
+{
+ "modello": "M3 VGG-16 blocchi 4-5 + TTA",
+ "file": "/content/drive/MyDrive/mirai_data/models/vgg16_m3.keras",
+ "pesi": "/content/drive/MyDrive/mirai_data/models/vgg16_m3.best.weights.h5",
+ "preprocessing": "vgg",
+ "tta": true,
+ "macro_f1_val": 0.6391190075014905,
+ "macro_f1_test": 0.5881889053735929,
+ "accuracy_test": 0.6765698852126941
+}
