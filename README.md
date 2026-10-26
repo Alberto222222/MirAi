@@ -8,7 +8,7 @@ Rinascimentale o Barocco** — mostrando *dove* la rete ha guardato per decidere
 ## Pipeline
 
 ```
-Foto ──► VGG-16 pre-addestrata (fine-tuning blocco 5) ──► softmax a 4 stili
+Foto ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──► softmax a 4 stili
                      │
                      └──► Grad-CAM / LIME ──► zone decisive (portali, rosoni, archi…)
 ```
@@ -19,10 +19,23 @@ Foto ──► VGG-16 pre-addestrata (fine-tuning blocco 5) ──► softmax a 
 | 2. Baseline | classe maggioritaria + piccola CNN da zero | ✅ |
 | 3. Modello M1 | VGG-16 congelata + testa GAP → BatchNorm → Dense(256) → softmax | ✅ |
 | 4. Modello M2 | fine-tuning del blocco 5 + analisi degli errori | ✅ |
-| 4b. Miglioramenti | M3 (VGG-16 blocchi 4-5), ConvNeXt-Tiny, scelta del modello finale | ⏳ |
+| 4b. Miglioramenti | M3 (VGG-16 blocchi 4-5), ConvNeXt-Tiny, scelta del modello finale | ✅ |
 | 5. Valutazione | accuracy, P/R/F1 per classe, matrice di confusione, McNemar | ☐ |
 | 6. Explainable AI | Grad-CAM, LIME, deletion test | ☐ |
 | 7. App | Gradio: stile + heatmap + descrizione di stile, elementi e monumento | ☐ |
+
+## Risultati sul test ufficiale (1.481 immagini)
+
+| Modello | Accuracy | Macro-F1 | Balanced accuracy |
+|---|---|---|---|
+| Classe maggioritaria | 0,342 | 0,127 | 0,250 |
+| CNN da zero | 0,454 | 0,437 | 0,477 |
+| M1 VGG-16 congelata | 0,569 | 0,511 | 0,511 |
+| M2 VGG-16 fine-tuning blocco 5 | 0,653 | 0,585 | 0,573 |
+| **M3 VGG-16 fine-tuning blocchi 4-5 + TTA (finale)** | **0,677** | **0,588** | **0,577** |
+| ConvNeXt-Tiny | 0,631 | 0,536 | 0,535 |
+
+Dettagli, matrici di confusione e test statistici in `docs/decisioni.md` e `reports/`.
 
 ## Struttura della repository
 

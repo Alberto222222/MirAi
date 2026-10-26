@@ -175,3 +175,51 @@ Interventi a basso costo, tutti scelti sul validation:
 Il modello finale è scelto sulla macro-F1 di validation; il test serve solo a riportare i
 risultati. Escluso per tempi: aumento della risoluzione a 448 px (richiederebbe di rigenerare il
 dataset), indicato come sviluppo futuro.
+
+**Dati del notebook 03b.** Validation allargato: 1.082 immagini (Romanico 295, Gotico 512,
+Rinascimentale 61, Barocco 214) contro le 206 dello split ufficiale. Training: 4.962 immagini,
+5.307 dopo il sovra-campionamento (Rinascimentale da 55 a 400, ottenute ripetendo le stesse 55 foto).
+Pesi di classe ricalcolati: Romanico 0,97 · Gotico 0,72 · Rinascimentale 1,82 · Barocco 1,20.
+
+**Addestramento.**
+- M3: migliore all'epoca 5 su 11 (250 s su GPU L4). Dopo l'epoca 5 la loss di training continua a
+  scendere (0,57 → 0,41) mentre quella di validation risale (0,77 → 0,81): sovradattamento,
+  contenuto dall'early stopping.
+- ConvNeXt-Tiny: fase 1 (solo testa) migliore all'epoca 2; nella fase 2 (sblocco di `stage_3`) la
+  loss di validation non migliora mai (epoca migliore 1). Il fine-tuning non porta beneficio.
+
+**Validation (scelta del modello)**
+
+| Modello | Accuracy | Macro-F1 | Balanced acc. | F1 Rinasc. |
+|---|---|---|---|---|
+| M3 VGG-16 blocchi 4-5 | 0,713 | 0,637 | 0,624 | 0,414 |
+| **M3 + TTA (scelto)** | 0,719 | **0,639** | 0,627 | 0,395 |
+| M2 blocco 5 (ottimistico: parte del validation era nel suo training) | 0,701 | 0,638 | 0,633 | 0,424 |
+| ConvNeXt-Tiny + TTA | 0,665 | 0,578 | 0,564 | 0,360 |
+
+**Test ufficiale (1.481 immagini)**
+
+| Modello | Accuracy | Macro-F1 | Balanced acc. | F1 Rom. | F1 Got. | F1 Rin. | F1 Bar. |
+|---|---|---|---|---|---|---|---|
+| M2 VGG-16 blocco 5 | 0,653 | 0,585 | 0,573 | 0,662 | 0,670 | 0,327 | 0,681 |
+| M3 VGG-16 blocchi 4-5 | 0,676 | 0,594 | 0,581 | 0,678 | 0,708 | 0,299 | 0,691 |
+| **M3 + TTA (modello finale)** | **0,677** | 0,588 | 0,577 | 0,678 | 0,711 | 0,272 | 0,692 |
+| ConvNeXt-Tiny | 0,631 | 0,536 | 0,535 | 0,594 | 0,677 | 0,205 | 0,668 |
+| ConvNeXt-Tiny + TTA | 0,630 | 0,532 | 0,532 | 0,591 | 0,675 | 0,192 | 0,671 |
+
+McNemar M2 vs modello finale: b = 111 (solo M2 corretto), c = 146 (solo M3 + TTA corretto),
+chi-quadro con correzione di continuità, p ≈ 0,034: il miglioramento è statisticamente
+significativo al 5%, ma di entità modesta (+2,4 punti di accuracy).
+
+**Lettura dei risultati**
+- L'errore Gotico → Romanico scende dal 27% (M2) al 16%; la confusione inversa Romanico → Gotico
+  sale al 27%. Le chiese di transizione romanico-gotica, con una sola etichetta Wikidata per
+  edificio, restano il caso ambiguo principale.
+- La test-time augmentation ha un effetto nullo (+0,002 di macro-F1 sul validation, −0,006 sul
+  test). La scelta del modello resta quella fatta sul validation.
+- ConvNeXt-Tiny, architettura più recente, è inferiore alla VGG-16 su questo problema: con dati
+  scarsi e rumorosi un backbone più moderno non garantisce un guadagno.
+- **Il Rinascimentale resta il limite principale**: recall 0,17 e precisione 0,68. Il modello lo
+  predice raramente (25 volte su 1.481) e il 56% delle immagini rinascimentali è classificato come
+  Barocco. Pesi di classe, sovra-campionamento, augmentation e cambio di architettura non lo hanno
+  migliorato: il limite sono le 55 fotografie distinte disponibili nel training, non il modello.
