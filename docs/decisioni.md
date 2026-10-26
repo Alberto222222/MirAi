@@ -134,3 +134,44 @@ il 47% delle immagini gotiche è classificato come romanico.
 Oltre alla matrice di confusione, gli errori vengono analizzati con informazioni che il modello
 non vede: sotto-stile Wikidata (per verificare se l'errore Gotico → Romanico è concentrato in
 sotto-stili come il *Brick Gothic*), Paese e posizione geografica, confidenza della predizione.
+
+**Risultati del notebook 03 (test ufficiale, 1.481 immagini)**
+
+| Modello | Accuracy | Macro-F1 | Balanced acc. | F1 Rom. | F1 Got. | F1 Rin. | F1 Bar. |
+|---|---|---|---|---|---|---|---|
+| M1 VGG-16 congelata | 0,569 | 0,511 | 0,511 | 0,631 | 0,566 | 0,333 | 0,513 |
+| M2 VGG-16 blocco 5 | 0,653 | 0,585 | 0,573 | 0,662 | 0,670 | 0,327 | 0,681 |
+
+McNemar M1 vs M2: b = 96, c = 220, p ≈ 4,5·10⁻¹². L'errore Gotico → Romanico scende dal 47% al
+27%; il Barocco riconosciuto sale dal 38% al 69%. Il Rinascimentale resta debole: il 56% delle sue
+immagini è classificato come Barocco.
+
+Analisi per sotto-stile (M2, immagini gotiche classificate come romaniche): «Gothic architecture»
+38,8% (224 immagini), Brick Gothic 22,6% (31), English Gothic 21,4% (14), Gothic Revival 15,8%
+(228). **L'ipotesi Brick Gothic è smentita**: l'errore si concentra sulle chiese con etichetta
+generica, spesso edifici medievali di transizione. Accuracy per Paese: Francia 0,74, Italia 0,49.
+Confidenza media: 0,72 sulle predizioni corrette, 0,59 su quelle errate.
+
+## D10 – Mappa di Kohonen (SOM) al posto dell'algoritmo genetico
+L'algoritmo genetico avrebbe cercato gli iperparametri della testa (learning rate, dropout,
+neuroni, L2, esponente dei pesi di classe) con fitness = macro-F1 di validazione. Guadagno atteso
+piccolo e rischio di sovradattamento a un validation ridotto. La SOM, addestrata senza etichette
+sui vettori di 512 caratteristiche del modello finale, risponde invece a una domanda emersa dai
+risultati: gli stili sono separati nello spazio appreso dalla rete, e dove si sovrappongono
+(Rinascimento/Barocco, Gotico/Romanico)?
+
+## D11 – Miglioramenti del modello (notebook 03b)
+Riferimento: sul benchmark a 6 stili gli autori di WikiChurches riportano una balanced accuracy
+del 60,2% (ResNet-50, 224 px) e del 69,5% nella configurazione migliore (448 px, pre-addestramento
+ImageNet-21k, bilanciamento); anche lì il Rinascimentale è lo stile più confuso con il Barocco.
+
+Interventi a basso costo, tutti scelti sul validation:
+- validation allargato con il 15% delle chiese del training (il test ufficiale resta invariato);
+- sovra-campionamento (almeno 400 immagini per stile per epoca) e augmentation forte;
+- **M3**: VGG-16 con fine-tuning dei blocchi 4 e 5, partendo da M1;
+- test-time augmentation (media tra immagine e immagine ribaltata);
+- confronto con **ConvNeXt-Tiny** (2022), stesso protocollo e stessa testa.
+
+Il modello finale è scelto sulla macro-F1 di validation; il test serve solo a riportare i
+risultati. Escluso per tempi: aumento della risoluzione a 448 px (richiederebbe di rigenerare il
+dataset), indicato come sviluppo futuro.

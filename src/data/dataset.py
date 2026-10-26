@@ -57,6 +57,35 @@ def class_weights(train_df: pd.DataFrame, mode: str = config.CLASS_WEIGHT_MODE) 
     return {i: float(w[i]) for i in range(NUM_CLASSES)}
 
 
+def enlarge_validation(df: pd.DataFrame, frac: float = config.VAL_EXTRA_FRAC,
+                       seed: int = config.SEED) -> pd.DataFrame:
+    """Sposta nel validation una frazione delle CHIESE del training (stratificata per stile).
+
+    Il test ufficiale non viene toccato; la colonna 'split_ufficiale' conserva lo split originale.
+    """
+    from sklearn.model_selection import train_test_split
+
+    df = df.copy()
+    df["split_ufficiale"] = df["split"]
+    ch = df[df["split"] == "train"].groupby("church_id")["style"].first().reset_index()
+    _, extra = train_test_split(ch, test_size=frac, stratify=ch["style"], random_state=seed)
+    df.loc[df["church_id"].isin(set(extra["church_id"])) & (df["split"] == "train"), "split"] = "val"
+    return df
+
+
+def oversample(train_df: pd.DataFrame, min_count: int = config.OVERSAMPLE_MIN,
+               seed: int = config.SEED) -> pd.DataFrame:
+    """Ripete le immagini delle classi con meno di min_count esempi fino a raggiungerlo.
+    Ogni ripetizione riceve una data augmentation diversa durante l'addestramento."""
+    parts = []
+    for _, g in train_df.groupby("label"):
+        if len(g) < min_count:
+            extra = g.sample(min_count - len(g), replace=True, random_state=seed)
+            g = pd.concat([g, extra])
+        parts.append(g)
+    return pd.concat(parts).sample(frac=1, random_state=seed).reset_index(drop=True)
+
+
 # ---------------------------------------------------------------------------
 # Operazioni sulle immagini
 # ---------------------------------------------------------------------------
@@ -78,6 +107,25 @@ def _augment(img: tf.Tensor) -> tf.Tensor:
     img = tf.image.random_brightness(img, max_delta=0.15 * 255.0)
     img = tf.image.random_contrast(img, 0.85, 1.15)
     return tf.clip_by_value(img, 0.0, 255.0)
+
+
+def _augment_strong(img: tf.Tensor) -> tf.Tensor:
+    """Augmentation più forte: ritaglio di area e proporzioni variabili (poi 224x224),
+    ribaltamento, luminosità, contrasto, saturazione e tonalità."""
+    s = config.IMG_SIZE
+    hw = tf.cast(tf.shape(img)[:2], tf.float32)
+    area = hw[0] * hw[1] * tf.random.uniform([], config.CROP_SCALE[0], config.CROP_SCALE[1])
+    ratio = tf.exp(tf.random.uniform([], tf.math.log(3 / 4), tf.math.log(4 / 3)))
+    ch = tf.cast(tf.minimum(tf.sqrt(area / ratio), hw[0]), tf.int32)
+    cw = tf.cast(tf.minimum(tf.sqrt(area * ratio), hw[1]), tf.int32)
+    img = tf.image.random_crop(img, tf.stack([ch, cw, 3]))
+    img = tf.image.resize(tf.cast(img, tf.float32), [s, s], antialias=True) / 255.0
+    img = tf.image.random_flip_left_right(img)
+    img = tf.image.random_brightness(img, 0.15)
+    img = tf.image.random_contrast(img, 0.8, 1.2)
+    img = tf.image.random_saturation(tf.clip_by_value(img, 0.0, 1.0), 0.8, 1.2)
+    img = tf.image.random_hue(img, 0.03)
+    return tf.clip_by_value(img, 0.0, 1.0) * 255.0
 
 
 def _center(img: tf.Tensor) -> tf.Tensor:
@@ -108,15 +156,24 @@ def load_image_for_model(path: str | Path, kind: str = "vgg") -> tf.Tensor:
 # ---------------------------------------------------------------------------
 def make_dataset(df: pd.DataFrame, root: str | Path, training: bool, kind: str = "vgg",
                  class_weight: dict[int, float] | None = None,
-                 batch_size: int = config.BATCH_SIZE, seed: int = config.SEED) -> tf.data.Dataset:
-    """Restituisce batch (x, y) oppure (x, y, peso) se class_weight è indicato."""
+                 batch_size: int = config.BATCH_SIZE, seed: int = config.SEED,
+                 augment: str = "basic", view: str = "center") -> tf.data.Dataset:
+    """Restituisce batch (x, y) oppure (x, y, peso) se class_weight è indicato.
+
+    augment (solo training): "basic" oppure "strong".
+    view (solo valutazione): "center" = ritaglio centrale, "flip" = ritaglio centrale ribaltato
+    (le due viste servono al test-time augmentation).
+    """
     paths = [str(Path(root) / p) for p in df["path"]]
     labels = df["label"].to_numpy(dtype=np.int32)
     ds = tf.data.Dataset.from_tensor_slices((paths, labels))
     ds = ds.map(lambda p, y: (_load(p), y), num_parallel_calls=AUTOTUNE).cache()
     if training:
         ds = ds.shuffle(min(len(paths), 2000), seed=seed, reshuffle_each_iteration=True)
-        ds = ds.map(lambda x, y: (_augment(x), y), num_parallel_calls=AUTOTUNE)
+        aug = _augment_strong if augment == "strong" else _augment
+        ds = ds.map(lambda x, y: (aug(x), y), num_parallel_calls=AUTOTUNE)
+    elif view == "flip":
+        ds = ds.map(lambda x, y: (tf.image.flip_left_right(_center(x)), y), num_parallel_calls=AUTOTUNE)
     else:
         ds = ds.map(lambda x, y: (_center(x), y), num_parallel_calls=AUTOTUNE)
     ds = ds.map(lambda x, y: (preprocess(x, kind), y), num_parallel_calls=AUTOTUNE)

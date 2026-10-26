@@ -18,7 +18,8 @@ Foto ──► VGG-16 pre-addestrata (fine-tuning blocco 5) ──► softmax a 
 | 1. Dataset | WikiChurches-4, split ufficiale per chiesa (7.526 immagini) | ✅ |
 | 2. Baseline | classe maggioritaria + piccola CNN da zero | ✅ |
 | 3. Modello M1 | VGG-16 congelata + testa GAP → BatchNorm → Dense(256) → softmax | ✅ |
-| 4. Modello M2 | fine-tuning del blocco 5 + analisi degli errori | ⏳ |
+| 4. Modello M2 | fine-tuning del blocco 5 + analisi degli errori | ✅ |
+| 4b. Miglioramenti | M3 (VGG-16 blocchi 4-5), ConvNeXt-Tiny, scelta del modello finale | ⏳ |
 | 5. Valutazione | accuracy, P/R/F1 per classe, matrice di confusione, McNemar | ☐ |
 | 6. Explainable AI | Grad-CAM, LIME, deletion test | ☐ |
 | 7. App | Gradio: stile + heatmap + descrizione di stile, elementi e monumento | ☐ |
@@ -52,6 +53,7 @@ Le immagini **non** stanno su GitHub: sono su Google Drive
 2. `notebooks/01_dataset.ipynb` (CPU): prepara il dataset e lo salva su Google Drive.
 3. `notebooks/02_baseline_m1.ipynb` (GPU): baseline, modello M1 e confronto.
 4. `notebooks/03_finetuning_errori.ipynb` (GPU): fine-tuning (M2) e analisi degli errori.
+5. `notebooks/03b_miglioramenti.ipynb` (GPU): M3, ConvNeXt-Tiny e scelta del modello finale.
 
 Ogni notebook si esegue dall'alto in basso.
 

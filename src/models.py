@@ -57,10 +57,59 @@ def load(path) -> keras.Model:
     return keras.models.load_model(str(path))
 
 
-def unfreeze(model: keras.Model, prefix: str = config.FT_UNFREEZE_PREFIX) -> list[str]:
+HEAD_LAYERS = {"gap", "head_bn", "head_dense", "dropout", "predictions"}
+
+
+def _add_head(x, num_classes: int, hidden: int, dropout: float):
+    x = layers.GlobalAveragePooling2D(name="gap")(x)
+    x = layers.BatchNormalization(name="head_bn")(x)
+    x = layers.Dense(hidden, activation="relu", name="head_dense")(x)
+    x = layers.Dropout(dropout, name="dropout")(x)
+    return layers.Dense(num_classes, activation="softmax", name="predictions")(x)
+
+
+def build_convnext_head(size: int = config.IMG_SIZE, num_classes: int = NUM_CLASSES,
+                        hidden: int = config.HEAD_HIDDEN,
+                        dropout: float = config.HEAD_DROPOUT) -> keras.Model:
+    """ConvNeXt-Tiny pre-addestrata su ImageNet (backbone congelato) con la stessa testa di M1.
+    La rete contiene già la sua pre-elaborazione: l'ingresso sono pixel RGB in [0, 255]."""
+    base = keras.applications.ConvNeXtTiny(include_top=False, weights="imagenet",
+                                           input_shape=(size, size, 3), include_preprocessing=True)
+    for layer in base.layers:
+        layer.trainable = False
+    out = _add_head(base.output, num_classes, hidden, dropout)
+    return keras.Model(base.input, out, name="convnext_tiny_head")
+
+
+def load_convnext(weights_path) -> keras.Model:
+    """Ricostruisce la ConvNeXt con testa e carica i pesi (più robusto del caricamento .keras)."""
+    model = build_convnext_head()
+    model.load_weights(str(weights_path))
+    return model
+
+
+def unfreeze_containing(model: keras.Model, token: str) -> list[str]:
+    """Sblocca gli strati il cui nome contiene token (es. 'stage_3'); gli altri strati del
+    backbone restano congelati, la testa resta addestrabile."""
+    sbloccati = []
+    for layer in model.layers:
+        if layer.name in HEAD_LAYERS:
+            layer.trainable = True
+        elif token in layer.name:
+            layer.trainable = True
+            if layer.weights:
+                sbloccati.append(layer.name)
+        else:
+            layer.trainable = False
+    return sbloccati
+
+
+def unfreeze(model: keras.Model, prefix=config.FT_UNFREEZE_PREFIX) -> list[str]:
     """Fine-tuning: rende addestrabili gli strati della VGG il cui nome inizia con prefix
-    (es. 'block5'); gli altri strati convoluzionali restano congelati, la testa resta addestrabile."""
-    head = {"gap", "head_bn", "head_dense", "dropout", "predictions"}
+    (es. 'block5', oppure una tupla come ('block4', 'block5')); gli altri strati
+    convoluzionali restano congelati, la testa resta addestrabile."""
+    head = HEAD_LAYERS
+    prefix = tuple(prefix) if isinstance(prefix, (list, tuple)) else prefix
     sbloccati = []
     for layer in model.layers:
         if layer.name.startswith(prefix):

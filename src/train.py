@@ -41,7 +41,10 @@ def train_model(model: keras.Model, train_ds, val_ds, name: str, epochs: int, lr
     hist = model.fit(train_ds, validation_data=val_ds, epochs=epochs, callbacks=callbacks, verbose=2)
     # Ripristina i pesi con la loss di validazione minima e salva il modello completo
     model.load_weights(str(best_weights))
-    model.save(str(models_dir / f"{name}.keras"))
+    try:
+        model.save(str(models_dir / f"{name}.keras"))
+    except Exception as e:  # alcuni strati non si serializzano: restano comunque i pesi .weights.h5
+        print(f"Avviso: salvataggio .keras non riuscito ({type(e).__name__}); usare {best_weights.name}")
     history = {k: [float(v) for v in vals] for k, vals in hist.history.items()}
     history["tempo_secondi"] = round(time.time() - t0, 1)
     history["epoche_eseguite"] = len(history.get("loss", []))
