@@ -104,6 +104,14 @@ CNX_FT_LR = 2e-5
 CNX_FT_EPOCHS = 20
 CNX_PATIENCE = 6
 
+# Dati esterni (notebook 03c): MonuMAI, solo nel training, stili in comune con WikiChurches
+MONUMAI_REPO = "https://github.com/ari-dasci/OD-MonuMAI.git"
+MONUMAI_STYLES = ("Gothic", "Renaissance", "Baroque")
+# Distanza di Hamming massima (su 64 bit) tra hash percettivi per considerare due foto duplicate
+PHASH_MAX_DIST = 8
+# Miglioramento minimo della macro-F1 di validation per accettare il modello con dati esterni
+DELTA_MIN = 0.01
+
 # Early stopping sulla loss di validazione (valore predefinito)
 PATIENCE = 4
 
@@ -114,4 +122,7 @@ COLAB_PROCESSED_DIR = "/content/processed"  # immagini ridimensionate
 DRIVE_DATA_DIR = "/content/drive/MyDrive/mirai_data"  # persistente
 DRIVE_MODELS_DIR = f"{DRIVE_DATA_DIR}/models"         # modelli addestrati (.keras)
 PROCESSED_TAR_NAME = "wikichurches4_256.tar"
+COLAB_MONUMAI_RAW = "/content/monumai_raw"   # repository MonuMAI originale
+COLAB_MONUMAI_DIR = "/content/monumai"       # immagini MonuMAI ridimensionate
+MONUMAI_TAR_NAME = "monumai_256.tar"
 SPLITS_CSV = "data/splits/splits.csv"

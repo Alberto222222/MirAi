@@ -1,0 +1,168 @@
+"""Dataset esterno MonuMAI (Lamas et al., 2021) usato per integrare il training.
+
+MonuMAI contiene 1.514 fotografie di facciate di monumenti in quattro stili (Ispano-musulmano,
+Gotico, Rinascimentale, Barocco), con riquadri annotati da esperti su 15 elementi architettonici
+(timpano triangolare, serliana, colonna salomonica, arco a sesto acuto, ...).
+Licenza CC BY 4.0 – https://github.com/ari-dasci/OD-MonuMAI
+
+Regole d'uso nel progetto:
+- solo stili presenti anche in WikiChurches (Gotico, Rinascimentale, Barocco);
+- le immagini entrano SOLO nel training: validation e test restano quelli di WikiChurches;
+- prima dell'uso si eliminano le foto quasi identiche a immagini di validation o test
+  (hash percettivo), per evitare che il test contenga immagini già viste in addestramento.
+"""
+from __future__ import annotations
+
+import re
+import subprocess
+import tarfile
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from PIL import Image, ImageOps
+
+from src import config
+
+IMG_EXT = {".jpg", ".jpeg", ".png"}
+
+
+def clone(dest: str | Path = config.COLAB_MONUMAI_RAW) -> Path:
+    """Scarica il repository pubblico di MonuMAI (solo l'ultima versione)."""
+    dest = Path(dest)
+    if not (dest / ".git").exists():
+        r = subprocess.run(["git", "clone", "-q", "--depth", "1", config.MONUMAI_REPO, str(dest)],
+                           capture_output=True, text=True)
+        if r.returncode != 0:
+            raise RuntimeError(r.stderr)
+    root = next(dest.glob("MonuMAI_dataset*"), dest)
+    print("MonuMAI in", root)
+    return root
+
+
+def _monument(stem: str) -> str:
+    """Nome del monumento dal nome del file: 'san_pedro_cordoba7' -> 'san_pedro_cordoba'."""
+    return re.sub(r"[\s_\-()\d]+$", "", stem.lower()) or stem.lower()
+
+
+def build_index(root: str | Path, styles=config.MONUMAI_STYLES) -> pd.DataFrame:
+    """Una riga per immagine: percorso originale, stile, etichetta, monumento."""
+    rows = []
+    label_of = {c: i for i, c in enumerate(config.CLASSES)}
+    for style in styles:
+        folder = Path(root) / style
+        for f in sorted(folder.iterdir()):
+            if f.is_file() and f.suffix.lower() in IMG_EXT:
+                rows.append({"src": str(f), "file": f.name, "style": style, "label": label_of[style],
+                             "monument": _monument(f.stem), "source": "monumai"})
+    df = pd.DataFrame(rows)
+    print("Immagini MonuMAI per stile:", df["style"].value_counts().reindex(styles).to_dict())
+    return df
+
+
+def resize(df: pd.DataFrame, out_dir: str | Path = config.COLAB_MONUMAI_DIR) -> pd.DataFrame:
+    """Lato corto a IMG_SHORT_SIDE px, JPEG; scarta i file illeggibili.
+    La colonna 'path' contiene il percorso assoluto dell'immagine ridimensionata."""
+    out_dir = Path(out_dir)
+    keep, paths = [], []
+    for i, r in df.iterrows():
+        dest = out_dir / r["style"] / (Path(r["file"]).stem + ".jpg")
+        try:
+            if not dest.exists():
+                im = ImageOps.exif_transpose(Image.open(r["src"])).convert("RGB")
+                s = config.IMG_SHORT_SIDE / min(im.size)
+                im = im.resize((max(1, round(im.width * s)), max(1, round(im.height * s))), Image.LANCZOS)
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                im.save(dest, "JPEG", quality=92)
+            keep.append(i)
+            paths.append(str(dest))
+        except Exception as e:  # file corrotto o formato non leggibile
+            print("scartata:", r["file"], type(e).__name__)
+    out = df.loc[keep].copy()
+    out["path"] = paths
+    return out.reset_index(drop=True)
+
+
+# ---------------------------------------------------------------------------
+# Controllo dei duplicati con hash percettivo
+# ---------------------------------------------------------------------------
+def phash_bits(paths) -> np.ndarray:
+    """Hash percettivo a 64 bit di ogni immagine, come matrice booleana (n, 64).
+    Due foto uguali ma ridimensionate o ricompresse hanno hash quasi identici."""
+    # Algoritmo pHash: scala di grigi 32x32 -> DCT 2D -> blocco 8x8 delle basse frequenze
+    # -> bit = coefficiente sopra la mediana del blocco
+    from scipy.fft import dct
+    out = np.zeros((len(paths), 64), dtype=bool)
+    for i, p in enumerate(paths):
+        with Image.open(p) as im:
+            g = np.asarray(im.convert("L").resize((32, 32), Image.LANCZOS), dtype=np.float64)
+        low = dct(dct(g, axis=0, norm="ortho"), axis=1, norm="ortho")[:8, :8]
+        out[i] = (low > np.median(low)).flatten()
+    return out
+
+
+def nearest(ext_bits: np.ndarray, ref_bits: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Per ogni immagine esterna: distanza di Hamming minima da un'immagine di riferimento e indice."""
+    a, b = ext_bits.astype(np.int16), ref_bits.astype(np.int16)
+    # bit diversi = n_bit - concordanze sui bit a 1 - concordanze sui bit a 0
+    dist = 64 - (a @ b.T) - ((1 - a) @ (1 - b).T)
+    return dist.min(axis=1), dist.argmin(axis=1)
+
+
+def remove_duplicates(ext: pd.DataFrame, ref: pd.DataFrame, ref_root: str | Path,
+                      max_dist: int = config.PHASH_MAX_DIST) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Elimina dalle immagini esterne quelle quasi identiche a un'immagine di riferimento
+    (validation + test). Restituisce (immagini tenute, coppie di duplicati trovate)."""
+    ext_bits = phash_bits(ext["path"])
+    ref_bits = phash_bits([str(Path(ref_root) / p) for p in ref["path"]])
+    d, j = nearest(ext_bits, ref_bits)
+    ext = ext.assign(phash_dist=d, ref_path=ref["path"].to_numpy()[j],
+                     ref_split=ref["split"].to_numpy()[j], ref_style=ref["style"].to_numpy()[j])
+    dup = ext[ext["phash_dist"] <= max_dist]
+    print(f"Duplicati (distanza ≤ {max_dist} bit su 64): {len(dup)} su {len(ext)}")
+    return ext[ext["phash_dist"] > max_dist].reset_index(drop=True), dup.reset_index(drop=True)
+
+
+def balance(df: pd.DataFrame, per_class: int | None = None, seed: int = config.SEED) -> pd.DataFrame:
+    """Stesso numero di immagini per stile (di default quello del Rinascimentale), così che la
+    provenienza 'MonuMAI' non diventi un indizio dello stile."""
+    n = per_class or int((df["style"] == "Renaissance").sum())
+    parts = [g.sample(min(n, len(g)), random_state=seed) for _, g in df.groupby("style")]
+    return pd.concat(parts).reset_index(drop=True)
+
+
+# ---------------------------------------------------------------------------
+# Annotazioni degli elementi architettonici (usate dalla spiegabilità e dall'app)
+# ---------------------------------------------------------------------------
+def read_annotations(root: str | Path, styles=config.MONUMAI_STYLES) -> pd.DataFrame:
+    """Riquadri degli elementi (formato Pascal VOC): file, stile, elemento, xmin, ymin, xmax, ymax,
+    larghezza e altezza dell'immagine originale."""
+    rows = []
+    for style in styles:
+        for x in sorted((Path(root) / style / "xml").glob("*.xml")):
+            try:
+                t = ET.parse(x).getroot()
+            except ET.ParseError:
+                continue
+            size = t.find("size")
+            w = int(float(size.findtext("width", "0"))) if size is not None else 0
+            h = int(float(size.findtext("height", "0"))) if size is not None else 0
+            for o in t.iter("object"):
+                bb = o.find("bndbox")
+                rows.append({"xml": x.name, "file": t.findtext("filename", x.stem + ".jpg"),
+                             "style": style, "element": o.findtext("name", "").strip(),
+                             "xmin": float(bb.findtext("xmin")), "ymin": float(bb.findtext("ymin")),
+                             "xmax": float(bb.findtext("xmax")), "ymax": float(bb.findtext("ymax")),
+                             "width": w, "height": h})
+    return pd.DataFrame(rows)
+
+
+def save_to_drive(local_dir: str | Path = config.COLAB_MONUMAI_DIR,
+                  drive_dir: str | Path = config.DRIVE_DATA_DIR) -> Path:
+    tar_path = Path(drive_dir) / config.MONUMAI_TAR_NAME
+    tar_path.parent.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(tar_path, "w") as tar:
+        tar.add(local_dir, arcname=Path(local_dir).name)
+    print(f"Salvato {tar_path} ({tar_path.stat().st_size / 1e6:.0f} MB)")
+    return tar_path

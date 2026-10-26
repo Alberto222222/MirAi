@@ -20,6 +20,7 @@ Foto ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──► softmax
 | 3. Modello M1 | VGG-16 congelata + testa GAP → BatchNorm → Dense(256) → softmax | ✅ |
 | 4. Modello M2 | fine-tuning del blocco 5 + analisi degli errori | ✅ |
 | 4b. Miglioramenti | M3 (VGG-16 blocchi 4-5), ConvNeXt-Tiny, scelta del modello finale | ✅ |
+| 4c. Dati esterni | MonuMAI nel training per il Rinascimentale, con controllo dei duplicati | ⏳ |
 | 5. Valutazione | accuracy, P/R/F1 per classe, matrice di confusione, McNemar | ☐ |
 | 6. Explainable AI | Grad-CAM, LIME, deletion test | ☐ |
 | 7. App | Gradio: stile + heatmap + descrizione di stile, elementi e monumento | ☐ |
@@ -51,7 +52,8 @@ MirAi/
 │   ├── colab_git.py      commit e push da Colab senza esporre il token
 │   └── data/
 │       ├── wikichurches.py   download, indice, ridimensionamento, split, report
-│       └── dataset.py        caricamento tf.data, data augmentation, pesi di classe
+│       ├── dataset.py        caricamento tf.data, data augmentation, pesi di classe
+│       └── monumai.py        dataset esterno MonuMAI: download, duplicati (hash percettivo), annotazioni
 ├── data/splits/          splits.csv (solo percorsi ed etichette, niente immagini)
 ├── reports/              metriche (JSON/CSV), predizioni sul test, figure
 └── docs/decisioni.md     registro delle scelte progettuali con la motivazione
@@ -67,6 +69,7 @@ Le immagini **non** stanno su GitHub: sono su Google Drive
 3. `notebooks/02_baseline_m1.ipynb` (GPU): baseline, modello M1 e confronto.
 4. `notebooks/03_finetuning_errori.ipynb` (GPU): fine-tuning (M2) e analisi degli errori.
 5. `notebooks/03b_miglioramenti.ipynb` (GPU): M3, ConvNeXt-Tiny e scelta del modello finale.
+6. `notebooks/03c_dati_esterni.ipynb` (GPU): M3 con immagini MonuMAI aggiunte al training.
 
 Ogni notebook si esegue dall'alto in basso.
 
@@ -79,4 +82,8 @@ Tutti i risultati usano `SEED = 42` (in `src/config.py`).
   Dati: <https://doi.org/10.5281/zenodo.5166986> – licenza **CC BY-SA 4.0**.
   Le immagini provengono da Wikimedia Commons; autore e licenza di ogni immagine sono
   nelle colonne `author` e `license` di `data/splits/splits.csv`.
+- **MonuMAI** – A. Lamas et al., *MonuMAI: Dataset, deep learning pipeline and citizen science
+  based app for monumental heritage taxonomy and classification*, Neurocomputing 420 (2021).
+  Dati: <https://github.com/ari-dasci/OD-MonuMAI> – licenza **CC BY 4.0**. Usato solo per il
+  training (stili Gotico, Rinascimentale, Barocco); le immagini non sono incluse in questa repository.
 - Il codice di questa repository è distribuito a scopo didattico.

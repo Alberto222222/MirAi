@@ -223,3 +223,27 @@ significativo al 5%, ma di entità modesta (+2,4 punti di accuracy).
   predice raramente (25 volte su 1.481) e il 56% delle immagini rinascimentali è classificato come
   Barocco. Pesi di classe, sovra-campionamento, augmentation e cambio di architettura non lo hanno
   migliorato: il limite sono le 55 fotografie distinte disponibili nel training, non il modello.
+
+## D12 – Dati esterni per il Rinascimentale (notebook 03c)
+Dall'analisi del notebook 03b il limite del Rinascimentale sono i dati (55 fotografie distinte nel
+training), non il modello. Si integra il training con **MonuMAI** (Lamas et al., 2021): 1.514 facciate di
+monumenti in quattro stili, di cui 312 rinascimentali, con riquadri annotati da esperti su 15 elementi
+architettonici; licenza CC BY 4.0.
+
+Alternativa scartata: l'*Architectural Style Dataset* (Xu et al., 2014, 25 stili da Wikimedia Commons)
+non ha una classe dedicata al Rinascimento.
+
+Regole fissate prima di eseguire l'esperimento:
+- MonuMAI entra solo nel training; validation e test restano quelli di WikiChurches;
+- solo Gotico, Rinascimentale e Barocco, con lo stesso numero di immagini per stile: se MonuMAI
+  fornisse solo immagini rinascimentali, la rete potrebbe imparare a riconoscere la provenienza della
+  foto (inquadratura frontale, monumenti spagnoli) invece dello stile;
+- eliminazione delle immagini quasi identiche a quelle di validation o test, con hash percettivo
+  (pHash a 64 bit, distanza di Hamming ≤ 8): le due raccolte provengono entrambe dal web;
+- stessa configurazione di M3; un secondo M3 senza dati esterni, con un altro seme, stima la
+  variabilità dovuta al caso;
+- il nuovo modello si accetta solo se la macro-F1 di validation supera quella di M3 + TTA di almeno
+  max(0,01; variabilità stimata). Il test si usa solo dopo la decisione.
+
+Le annotazioni degli elementi di MonuMAI servono anche alle fasi successive: verifica delle mappe di
+salienza (la rete guarda gli elementi indicati dagli esperti?) e descrizione degli elementi nell'app.
