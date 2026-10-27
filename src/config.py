@@ -112,6 +112,15 @@ PHASH_MAX_DIST = 8
 # Miglioramento minimo della macro-F1 di validation per accettare il modello con dati esterni
 DELTA_MIN = 0.01
 
+# Mappa di Kohonen (notebook 04) sulle 512 caratteristiche del modello finale (strato GAP).
+# Griglia ~ 5·sqrt(N) neuroni per N ≈ 5.000 immagini di training -> 18 x 18 = 324 neuroni.
+SOM_ROWS = 18
+SOM_COLS = 18
+SOM_ITER_PER_SAMPLE = 20      # iterazioni totali = 20 x numero di immagini di training
+SOM_ALPHA0 = 0.5              # tasso di apprendimento iniziale
+SOM_SIGMA0 = 9.0              # raggio iniziale del vicinato (metà del lato della griglia)
+KNN_K = 5                     # chiese simili mostrate dall'app
+
 # Early stopping sulla loss di validazione (valore predefinito)
 PATIENCE = 4
 

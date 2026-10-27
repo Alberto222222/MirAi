@@ -283,3 +283,21 @@ McNemar: b = 72, c = 91, p ≈ 0,16, differenza **non significativa**.
   stesso dominio.
 - MonuMAI resta utile per le fasi successive: le annotazioni dei 15 elementi architettonici servono a
   verificare le mappe di salienza e a descrivere gli elementi nell'app.
+
+## D13 – Il modello si congela; mappa di Kohonen sulle caratteristiche (notebook 04)
+Dopo il notebook 03c il modello finale resta **M3 (03b) + TTA**. Ensemble, soglie per classe e
+calibrazione delle probabilità sono stati valutati e scartati: i guadagni attesi sono dello stesso ordine
+della variabilità tra addestramenti (0,04 di macro-F1) e l'incertezza tra stili vicini viene gestita
+nell'applicazione con una risposta graduata (logica fuzzy).
+
+La SOM (Kohonen) proietta le 512 caratteristiche dello strato GAP del modello finale (media tra immagine e
+immagine ribaltata, standardizzate sul training) su una griglia 18 × 18, circa 5·√N neuroni per N ≈ 5.000
+immagini di training. Addestramento online non supervisionato: 20 presentazioni per immagine, raggio del
+vicinato da 9 neuroni e tasso di apprendimento da 0,5 in decrescita esponenziale, pesi iniziali sul piano
+delle prime due componenti principali.
+
+Uso dei risultati:
+- mappa degli stili, mappe per stile e U-matrix: dove gli stili sono separati e dove si sovrappongono;
+- SOM come classificatore (etichetta del neurone vincitore) confrontata con la rete;
+- posizione degli errori sulla mappa (confini, regioni miste);
+- «chiese simili»: le 5 immagini più vicine nello spazio delle caratteristiche, mostrate dall'app.
