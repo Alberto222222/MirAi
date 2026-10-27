@@ -247,3 +247,39 @@ Regole fissate prima di eseguire l'esperimento:
 
 Le annotazioni degli elementi di MonuMAI servono anche alle fasi successive: verifica delle mappe di
 salienza (la rete guarda gli elementi indicati dagli esperti?) e descrizione degli elementi nell'app.
+
+**Risultati del notebook 03c**
+- Duplicati: nessuna immagine MonuMAI è quasi identica a immagini di validation o test
+  (0 su 1.187; distanza minima 10 bit, mediana 18).
+- Training integrato: 312 immagini MonuMAI per stile (Gotico, Rinascimentale, Barocco). Il
+  Rinascimentale passa da 55 a 367 immagini distinte, di cui l'85% da MonuMAI.
+
+Validation (1.082 immagini):
+
+| Modello | Accuracy | Macro-F1 | F1 Rinasc. |
+|---|---|---|---|
+| M3 (03b) + TTA – modello finale | 0,719 | **0,639** | 0,395 |
+| M3 controllo (stessi dati, altro seme) + TTA | 0,689 | 0,597 | 0,300 |
+| M3 + MonuMAI + TTA | 0,694 | 0,573 | 0,187 |
+
+Variabilità stimata tra due addestramenti identici: 0,042 di macro-F1, quindi soglia 0,042.
+M3 + MonuMAI: Δ = −0,066 → **respinto** secondo la regola fissata; il modello finale resta M3 (03b) + TTA.
+
+Test ufficiale, riportato per completezza dopo la decisione: M3 + MonuMAI + TTA ottiene accuracy
+0,689, macro-F1 0,610, balanced accuracy 0,595 (F1 Rom. 0,690 · Got. 0,722 · Rin. 0,321 · Bar. 0,706),
+contro 0,677 / 0,588 / 0,577 del modello finale; recall del Rinascimentale 0,21 contro 0,17.
+McNemar: b = 72, c = 91, p ≈ 0,16, differenza **non significativa**.
+
+**Lettura**
+- Validation e test danno indicazioni opposte (−0,066 contro +0,022). Le differenze sono dello stesso
+  ordine della variabilità tra due addestramenti identici (0,04): con questi dati, scarti di qualche
+  centesimo di macro-F1 tra varianti di M3 non sono distinguibili dal caso. La regola decisa prima
+  dell'esperimento evita di scegliere il modello in base al test.
+- Il valore di validation di M3 (03b) è probabilmente ottimistico: M3 è stato scelto come migliore
+  tra più candidati sullo stesso validation (effetto del «vincitore»), e il controllo con un altro seme
+  ottiene 0,597.
+- MonuMAI non risolve il Rinascimentale (recall sul test da 0,17 a 0,21): sono facciate andaluse
+  fotografate da vicino, un dominio diverso dalle chiese di WikiChurches, spesso fotografate per intero. Il limite resta la quantità di dati rinascimentali dello
+  stesso dominio.
+- MonuMAI resta utile per le fasi successive: le annotazioni dei 15 elementi architettonici servono a
+  verificare le mappe di salienza e a descrivere gli elementi nell'app.

@@ -20,7 +20,7 @@ Foto ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──► softmax
 | 3. Modello M1 | VGG-16 congelata + testa GAP → BatchNorm → Dense(256) → softmax | ✅ |
 | 4. Modello M2 | fine-tuning del blocco 5 + analisi degli errori | ✅ |
 | 4b. Miglioramenti | M3 (VGG-16 blocchi 4-5), ConvNeXt-Tiny, scelta del modello finale | ✅ |
-| 4c. Dati esterni | MonuMAI nel training per il Rinascimentale, con controllo dei duplicati | ⏳ |
+| 4c. Dati esterni | MonuMAI nel training per il Rinascimentale: esperimento respinto sul validation | ✅ |
 | 5. Valutazione | accuracy, P/R/F1 per classe, matrice di confusione, McNemar | ☐ |
 | 6. Explainable AI | Grad-CAM, LIME, deletion test | ☐ |
 | 7. App | Gradio: stile + heatmap + descrizione di stile, elementi e monumento | ☐ |
