@@ -210,16 +210,38 @@ def _download_one(row, out_dir: Path, width: int) -> dict:
 
 
 def download(df: pd.DataFrame, root: str | Path = config.COLAB_PROCESSED_DIR_HR,
-             width: int = config.WD_THUMB_WIDTH, workers: int = 6) -> pd.DataFrame:
-    """Scarica e ridimensiona (lato corto 512 px) in <root>/wikidata/<stile>/<QID>.jpg."""
-    out_dir = Path(root) / "wikidata"
+             width: int = config.WD_THUMB_WIDTH, workers: int = 6,
+             checkpoint_tar: str | Path | None = None, batch: int = 1000) -> pd.DataFrame:
+    """Scarica e ridimensiona (lato corto 512 px) in <root>/wikidata/<stile>/<QID>.jpg.
+
+    Con checkpoint_tar (un file su Google Drive) il download è riprendibile: all'avvio si ripristinano le foto
+    già salvate, e ogni `batch` foto le nuove vengono aggiunte all'archivio. Se il runtime si interrompe,
+    basta rieseguire: si riparte dall'ultimo salvataggio."""
+    root = Path(root)
+    out_dir = root / "wikidata"
+    if checkpoint_tar and Path(checkpoint_tar).exists():
+        with tarfile.open(checkpoint_tar) as tar:
+            try:
+                tar.extractall(root.parent, filter="data")
+            except TypeError:
+                tar.extractall(root.parent)
+        print(f"  ripristinate dal salvataggio intermedio: {sum(1 for _ in out_dir.rglob('*.jpg'))} foto")
     results = []
-    with ThreadPoolExecutor(workers) as ex:
-        futs = [ex.submit(_download_one, r, out_dir, width) for r in df.itertuples()]
-        for i, f in enumerate(as_completed(futs), 1):
-            results.append(f.result())
-            if i % 500 == 0 or i == len(futs):
-                print(f"  scaricate {i}/{len(futs)}")
+    rows = list(df.itertuples())
+    for start in range(0, len(rows), batch):
+        part = rows[start:start + batch]
+        nuove = [r for r in part if not (out_dir / r.style / f"{r.item}.jpg").exists()]
+        with ThreadPoolExecutor(workers) as ex:
+            results += [f.result() for f in as_completed([ex.submit(_download_one, r, out_dir, width) for r in part])]
+        if checkpoint_tar and nuove:
+            Path(checkpoint_tar).parent.mkdir(parents=True, exist_ok=True)
+            with tarfile.open(checkpoint_tar, "a") as tar:
+                for r in nuove:
+                    f = out_dir / r.style / f"{r.item}.jpg"
+                    if f.exists():
+                        tar.add(f, arcname=f"{root.name}/wikidata/{r.style}/{r.item}.jpg")
+        print(f"  scaricate {min(start + batch, len(rows))}/{len(rows)}"
+              + (" – salvate su Drive" if checkpoint_tar else ""))
     res = pd.DataFrame(results)
     return df.merge(res, on="item", how="left")
 
