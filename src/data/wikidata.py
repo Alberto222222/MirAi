@@ -110,11 +110,31 @@ def items(subs: pd.DataFrame) -> pd.DataFrame:
         qids = g["qid"].tolist()
         for i in range(0, len(qids), 150):
             vals = " ".join(f"wd:{q}" for q in qids[i:i + 150])
-            q = f"""SELECT ?item ?st (SAMPLE(?img) AS ?image) WHERE {{ VALUES ?st {{ {vals} }}
-                    ?item wdt:P149 ?st ; wdt:P18 ?img . }} GROUP BY ?item ?st"""
-            rows += [{"item": _qid(b["item"]["value"]), "style": c, "substyle": _qid(b["st"]["value"]),
-                      "image": b["image"]["value"]} for b in _sparql(q)]
+            q = f"""SELECT ?item ?st (SAMPLE(?img) AS ?image) (SAMPLE(?co) AS ?coord) WHERE {{ VALUES ?st {{ {vals} }}
+                    ?item wdt:P149 ?st ; wdt:P18 ?img . OPTIONAL {{ ?item wdt:P625 ?co }} }} GROUP BY ?item ?st"""
+            rows += [_row(b, c, _qid(b["st"]["value"])) for b in _sparql(q)]
     return pd.DataFrame(rows)
+
+
+def _row(b: dict, style: str, substyle: str) -> dict:
+    co = pd.Series([b.get("coord", {}).get("value", "")]).str.extract(r"Point\(([-\d.]+) ([-\d.]+)\)").astype(float)
+    return {"item": _qid(b["item"]["value"]), "style": style, "substyle": substyle,
+            "image": b["image"]["value"], "lon": co.iloc[0, 0], "lat": co.iloc[0, 1]}
+
+
+def items_by_type(style: str, type_labels: list[str]) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Edifici riconosciuti dal TIPO invece che dalla proprietà «stile» (es. tempio romano, anfiteatro romano):
+    su Wikidata i monumenti antichi raramente hanno P149. Tipi inclusi anche nei sotto-tipi (P279*)."""
+    tipi, rows = [], []
+    for lab in type_labels:
+        hit = search_style(lab)
+        print(f"{style:13s} tipo «{lab}» → {hit['qid']} {hit['label']} – {hit['description']}")
+        tipi.append({"style": style, "qid": hit["qid"], "name": f"[tipo] {hit['label']}"})
+        q = f"""SELECT ?item (SAMPLE(?img) AS ?image) (SAMPLE(?co) AS ?coord) WHERE {{
+                ?item wdt:P31/wdt:P279* wd:{hit['qid']} ; wdt:P18 ?img . OPTIONAL {{ ?item wdt:P625 ?co }} }}
+                GROUP BY ?item"""
+        rows += [_row(b, style, hit["qid"]) for b in _sparql(q)]
+    return pd.DataFrame(rows), pd.DataFrame(tipi)
 
 
 def resolve_items(raw: pd.DataFrame, exclude: set[str]) -> tuple[pd.DataFrame, dict]:
@@ -122,11 +142,15 @@ def resolve_items(raw: pd.DataFrame, exclude: set[str]) -> tuple[pd.DataFrame, d
     stats = {"edifici_trovati": raw["item"].nunique()}
     raw = raw[~raw["item"].isin(exclude)]
     stats["dopo_esclusione_wikichurches"] = raw["item"].nunique()
+    (la0, la1), (lo0, lo1) = config.WD_REGION_LAT, config.WD_REGION_LON
+    raw = raw[raw["lat"].between(la0, la1) & raw["lon"].between(lo0, lo1)]
+    stats["in_europa_e_mediterraneo"] = raw["item"].nunique()
     n_cls = raw.groupby("item")["style"].nunique()
     ambigui = set(n_cls[n_cls > 1].index)
     stats["ambigui_scartati"] = len(ambigui)
     df = (raw[~raw["item"].isin(ambigui)].groupby("item")
-          .agg(style=("style", "first"), substyle=("substyle", "first"), image=("image", "first")).reset_index())
+          .agg(style=("style", "first"), substyle=("substyle", "first"), image=("image", "first"),
+               lat=("lat", "first"), lon=("lon", "first")).reset_index())
     df = df[df["image"].str.lower().str.endswith(IMG_EXT)]
     stats["con_immagine_raster"] = len(df)
     return df, stats
@@ -148,10 +172,7 @@ def add_labels(df: pd.DataFrame) -> pd.DataFrame:
             rows.append({"item": _qid(b["item"]["value"]), **{k: b.get(k, {}).get("value", "")
                                                             for k in ("name", "country", "type", "coord")}})
     lab = pd.DataFrame(rows)
-    out = df.merge(lab, on="item", how="left")
-    co = out["coord"].fillna("").str.extract(r"Point\(([-\d.]+) ([-\d.]+)\)").astype(float)
-    out["lon"], out["lat"] = co[0], co[1]
-    return out.drop(columns=["coord"])
+    return df.merge(lab.drop(columns=["coord"]), on="item", how="left")
 
 
 # ---------------------------------------------------------------------------

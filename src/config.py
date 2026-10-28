@@ -141,6 +141,16 @@ WIKIDATA_STYLE_SEARCH = {
     "Classical": ["ancient Roman architecture", "ancient Greek architecture"],
     "Neoclassical": ["Neoclassical architecture"],
 }
+# I monumenti antichi su Wikidata raramente hanno la proprietà «stile»: per il Classico antico si aggiungono gli
+# edifici di questi tipi (e sotto-tipi)
+WIKIDATA_TYPE_SEARCH = {
+    "Classical": ["Roman temple", "ancient Greek temple", "Roman theatre", "ancient Greek theatre",
+                  "Roman amphitheatre", "Roman triumphal arch", "Roman aqueduct"],
+}
+# Area geografica: Europa e Mediterraneo (la guida è pensata per monumenti europei; esclude ad es. le case
+# coloniali nordamericane etichettate come neoclassiche)
+WD_REGION_LAT = (30.0, 72.0)
+WD_REGION_LON = (-25.0, 45.0)
 WD_CAP_PER_CLASS = 1500       # immagini massime per stile
 WD_MIN_PER_CLASS = 300        # sotto questa soglia lo stile non è utilizzabile
 WD_THUMB_WIDTH = 960          # larghezza della miniatura scaricata da Wikimedia Commons
