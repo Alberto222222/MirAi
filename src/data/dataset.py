@@ -20,7 +20,6 @@ import tensorflow as tf
 from src import config
 
 AUTOTUNE = tf.data.AUTOTUNE
-NUM_CLASSES = len(config.CLASSES)
 # Media dei canali di ImageNet in ordine BGR: è la pre-elaborazione "caffe" della VGG-16
 VGG_MEAN_BGR = tf.constant([103.939, 116.779, 123.68], dtype=tf.float32)
 
@@ -45,16 +44,17 @@ def stratified_subset(df: pd.DataFrame, per_class: int, seed: int = config.SEED)
 
 def class_weights(train_df: pd.DataFrame, mode: str = config.CLASS_WEIGHT_MODE) -> dict[int, float]:
     """Pesi di classe inversamente proporzionali alla frequenza nel training set."""
+    k = len(config.CLASSES)
     counts = (train_df["label"].value_counts()
-              .reindex(range(NUM_CLASSES), fill_value=0).to_numpy(dtype=float))
-    w = counts.sum() / (NUM_CLASSES * np.maximum(counts, 1))
+              .reindex(range(k), fill_value=0).to_numpy(dtype=float))
+    w = counts.sum() / (k * np.maximum(counts, 1))
     if mode == "sqrt":
         w = np.sqrt(w)
     elif mode == "none":
-        w = np.ones(NUM_CLASSES)
+        w = np.ones(k)
     elif mode != "balanced":
         raise ValueError(f"CLASS_WEIGHT_MODE sconosciuto: {mode}")
-    return {i: float(w[i]) for i in range(NUM_CLASSES)}
+    return {i: float(w[i]) for i in range(k)}
 
 
 def enlarge_validation(df: pd.DataFrame, frac: float = config.VAL_EXTRA_FRAC,
@@ -128,6 +128,25 @@ def _augment_strong(img: tf.Tensor) -> tf.Tensor:
     return tf.clip_by_value(img, 0.0, 1.0) * 255.0
 
 
+def _augment_light(img: tf.Tensor) -> tf.Tensor:
+    """Augmentation forte + variazioni di luce del giorno: correzione gamma (ombre e luce piena)
+    e dominante calda o fredda (alba/tramonto, cielo coperto)."""
+    img = _augment_strong(img) / 255.0
+    img = tf.image.adjust_gamma(img, tf.exp(tf.random.uniform([], tf.math.log(0.75), tf.math.log(1.35))))
+    t = tf.random.uniform([], -0.08, 0.08)                        # >0 caldo, <0 freddo
+    img = img * tf.stack([1.0 + t, 1.0, 1.0 - t])
+    return tf.clip_by_value(img, 0.0, 1.0) * 255.0
+
+
+# Condizioni di luce simulate per la prova di robustezza (solo valutazione)
+LIGHT_VIEWS = {
+    "sera (più scura)": lambda x: x * 0.55,
+    "sole forte (più chiara)": lambda x: 255.0 * tf.pow(x / 255.0, 0.6),
+    "tramonto (luce calda)": lambda x: x * tf.constant([1.18, 1.0, 0.78]),
+    "cielo coperto (basso contrasto)": lambda x: 0.5 * x + 0.5 * tf.reduce_mean(x),
+}
+
+
 def _center(img: tf.Tensor) -> tf.Tensor:
     s = config.IMG_SIZE
     return tf.cast(tf.image.resize_with_crop_or_pad(img, s, s), tf.float32)
@@ -160,9 +179,9 @@ def make_dataset(df: pd.DataFrame, root: str | Path, training: bool, kind: str =
                  augment: str = "basic", view: str = "center", cache: str | None = "") -> tf.data.Dataset:
     """Restituisce batch (x, y) oppure (x, y, peso) se class_weight è indicato.
 
-    augment (solo training): "basic" oppure "strong".
+    augment (solo training): "basic", "strong" oppure "light" (strong + variazioni di luce).
     view (solo valutazione): "center" = ritaglio centrale, "flip" = ritaglio centrale ribaltato
-    (le due viste servono al test-time augmentation).
+    (le due viste servono al test-time augmentation), oppure una delle condizioni di LIGHT_VIEWS.
     cache: "" = immagini decodificate tenute in memoria; un percorso = cache su disco
     (per le immagini ad alta risoluzione, che non entrano nella RAM); None = nessuna cache
     (una sola lettura, es. estrazione delle caratteristiche).
@@ -175,14 +194,17 @@ def make_dataset(df: pd.DataFrame, root: str | Path, training: bool, kind: str =
         ds = ds.cache(cache)
     if training:
         ds = ds.shuffle(min(len(paths), 2000), seed=seed, reshuffle_each_iteration=True)
-        aug = _augment_strong if augment == "strong" else _augment
+        aug = {"strong": _augment_strong, "light": _augment_light}.get(augment, _augment)
         ds = ds.map(lambda x, y: (aug(x), y), num_parallel_calls=AUTOTUNE)
     elif view == "flip":
         ds = ds.map(lambda x, y: (tf.image.flip_left_right(_center(x)), y), num_parallel_calls=AUTOTUNE)
+    elif view in LIGHT_VIEWS:
+        f = LIGHT_VIEWS[view]
+        ds = ds.map(lambda x, y: (tf.clip_by_value(f(_center(x)), 0.0, 255.0), y), num_parallel_calls=AUTOTUNE)
     else:
         ds = ds.map(lambda x, y: (_center(x), y), num_parallel_calls=AUTOTUNE)
     ds = ds.map(lambda x, y: (preprocess(x, kind), y), num_parallel_calls=AUTOTUNE)
     if class_weight is not None:
-        w = tf.constant([class_weight[i] for i in range(NUM_CLASSES)], dtype=tf.float32)
+        w = tf.constant([class_weight[i] for i in range(len(config.CLASSES))], dtype=tf.float32)
         ds = ds.map(lambda x, y: (x, y, tf.gather(w, y)), num_parallel_calls=AUTOTUNE)
     return ds.batch(batch_size).prefetch(AUTOTUNE)

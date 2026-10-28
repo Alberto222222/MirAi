@@ -16,20 +16,24 @@ from sklearn.metrics import (accuracy_score, balanced_accuracy_score, classifica
 
 from src import config
 
-LABELS_IT = [config.CLASS_NAMES_IT[c] for c in config.CLASSES]
-
-
-def compute_metrics(y_true, y_pred, name: str) -> dict:
+def compute_metrics(y_true, y_pred, name: str, labels: list[int] | None = None) -> dict:
+    """labels: classi su cui calcolare macro-F1 e metriche per classe (predefinito: tutte).
+    Serve quando un insieme di test contiene solo alcune classi (es. le 4 di WikiChurches valutate
+    con un modello a 6 classi): le predizioni verso le altre classi contano comunque come errori."""
     k = len(config.CLASSES)
-    rep = classification_report(y_true, y_pred, labels=list(range(k)), target_names=config.CLASSES,
+    labels = list(range(k)) if labels is None else list(labels)
+    names = [config.CLASSES[i] for i in labels]
+    y_true, y_pred = np.asarray(y_true), np.asarray(y_pred)
+    rep = classification_report(y_true, y_pred, labels=labels, target_names=names,
                                 output_dict=True, zero_division=0)
+    recall = [float(np.mean(y_pred[y_true == i] == i)) for i in labels if np.any(y_true == i)]
     return {
         "modello": name,
         "accuracy": float(accuracy_score(y_true, y_pred)),
-        "macro_f1": float(f1_score(y_true, y_pred, average="macro", labels=list(range(k)), zero_division=0)),
-        "balanced_accuracy": float(balanced_accuracy_score(y_true, y_pred)),
+        "macro_f1": float(f1_score(y_true, y_pred, average="macro", labels=labels, zero_division=0)),
+        "balanced_accuracy": float(np.mean(recall)),
         "per_classe": {c: {m: float(rep[c][m]) for m in ("precision", "recall", "f1-score", "support")}
-                       for c in config.CLASSES},
+                       for c in names},
         "matrice_confusione": confusion_matrix(y_true, y_pred, labels=list(range(k))).tolist(),
     }
 
@@ -103,14 +107,17 @@ def plot_confusion(cm, title: str, path: str | Path) -> None:
 
     cm = np.asarray(cm, dtype=float)
     norm = cm / np.maximum(cm.sum(axis=1, keepdims=True), 1)
-    fig, ax = plt.subplots(figsize=(5.2, 4.6))
+    fig, ax = plt.subplots(figsize=(5.2 + 0.6 * max(0, len(config.CLASSES) - 4), 4.6))
+    labels_it = [config.CLASS_NAMES_IT[c] for c in config.CLASSES]
+    rows = [i for i in range(len(cm)) if cm[i].sum() > 0]          # solo le classi presenti nel test
+    cm, norm = cm[rows], norm[rows]
     im = ax.imshow(norm, cmap="Blues", vmin=0, vmax=1)
     for i in range(norm.shape[0]):
         for j in range(norm.shape[1]):
             ax.text(j, i, f"{norm[i, j]:.2f}\n({int(cm[i, j])})", ha="center", va="center",
                     fontsize=8, color="white" if norm[i, j] > 0.5 else "black")
-    ax.set_xticks(range(len(LABELS_IT)), LABELS_IT, rotation=30, ha="right")
-    ax.set_yticks(range(len(LABELS_IT)), LABELS_IT)
+    ax.set_xticks(range(len(labels_it)), labels_it, rotation=30, ha="right")
+    ax.set_yticks(range(len(rows)), [labels_it[i] for i in rows])
     ax.set_xlabel("stile predetto")
     ax.set_ylabel("stile reale")
     ax.set_title(title)
@@ -149,6 +156,7 @@ def mcnemar(y_true, pred_a, pred_b) -> dict:
 def comparison_table(metrics_list: list[dict]) -> pd.DataFrame:
     rows = [{"modello": m["modello"], "accuracy": m["accuracy"], "macro-F1": m["macro_f1"],
              "balanced accuracy": m["balanced_accuracy"],
-             **{f"F1 {config.CLASS_NAMES_IT[c]}": m["per_classe"][c]["f1-score"] for c in config.CLASSES}}
+             **{f"F1 {config.CLASS_NAMES_IT[c]}": m["per_classe"][c]["f1-score"]
+                for c in config.CLASSES if c in m["per_classe"]}}
             for m in metrics_list]
     return pd.DataFrame(rows).set_index("modello").round(3)

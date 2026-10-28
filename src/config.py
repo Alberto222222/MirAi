@@ -14,7 +14,13 @@ CLASS_NAMES_IT = {
     "Gothic": "Gotico",
     "Renaissance": "Rinascimentale",
     "Baroque": "Barocco",
+    "Classical": "Classico antico",
+    "Neoclassical": "Neoclassico",
 }
+
+# Estensione a 6 stili (notebook 01c e 03e): monumenti di ogni tipo da Wikidata.
+# I notebook a 6 stili impostano config.CLASSES = CLASSES6 all'avvio.
+CLASSES6 = CLASSES + ["Classical", "Neoclassical"]
 
 # Identificativi Wikidata degli stili, usati da churches.json di WikiChurches.
 # Vengono comunque verificati contro style_names.txt durante l'ispezione.
@@ -129,6 +135,48 @@ BATCH_SIZE_HR = 16
 # Il modello a 448 px si accetta se la media della macro-F1 di validation di due addestramenti
 # supera di almeno DELTA_HR la media dei due addestramenti a 224 px (03b e controllo del 03c).
 DELTA_HR = 0.03
+
+# Dataset di monumenti da Wikidata (notebook 01c): stili cercati per nome, sotto-stili inclusi
+WIKIDATA_STYLE_SEARCH = {
+    "Classical": ["ancient Roman architecture", "ancient Greek architecture"],
+    "Neoclassical": ["Neoclassical architecture"],
+}
+WD_CAP_PER_CLASS = 1500       # immagini massime per stile
+WD_MIN_PER_CLASS = 300        # sotto questa soglia lo stile non è utilizzabile
+WD_THUMB_WIDTH = 960          # larghezza della miniatura scaricata da Wikimedia Commons
+WD_MIN_SHORT_SIDE = 400       # immagini più piccole scartate
+WD_MAX_ASPECT = 2.5           # panorami e dettagli molto allungati scartati
+WD_ARCH_QUANTILE = 0.05       # filtro «è un edificio?»: soglia = 5° percentile sulle foto WikiChurches
+WD_LABEL_MIN_PROB = 0.05      # pulizia delle etichette del training (probabilità fuori fold minima)
+WD_SPLIT = (0.70, 0.15, 0.15)
+WD_TAR_NAME = "wikidata6_512.tar"
+WD_SPLITS_CSV = "data/splits/splits6_wikidata.csv"
+# Somiglianza delle caratteristiche ImageNet (coseno) oltre la quale due foto mostrano lo stesso soggetto
+WD_FEAT_DUP = 0.95
+# Elementi architettonici diagnostici di MonuMAI (nomi delle annotazioni) e stile associato
+ELEMENTI_STILE = {
+    "arco-apuntado": "Gothic", "arco-conopial": "Gothic", "arco-trilobulado": "Gothic", "pinaculo-gotico": "Gothic",
+    "fronton": "Renaissance", "fronton-curvo": "Renaissance", "serliana": "Renaissance",
+    "fronton-partido": "Baroque", "columna-salomonica": "Baroque",
+}
+ELEMENTI_NOMI_IT = {
+    "arco-apuntado": "arco a sesto acuto", "arco-conopial": "arco inflesso", "arco-trilobulado": "arco trilobato",
+    "pinaculo-gotico": "pinnacolo gotico", "fronton": "timpano triangolare", "fronton-curvo": "timpano curvo",
+    "serliana": "serliana", "fronton-partido": "timpano spezzato", "columna-salomonica": "colonna tortile (salomonica)",
+    "arco-medio-punto": "arco a tutto sesto", "vano-adintelado": "portale architravato", "ojo-de-buey": "oculo",
+}
+ELEMENTI_CAP = 400            # ritagli massimi per stile nel training
+ELEMENTI_SPLITS_CSV = "data/splits/elementi_monumai.csv"
+# Modello a 6 stili: fase 1 solo testa, fase 2 blocchi 4-5 (come M3)
+S6_HEAD_EPOCHS = 6
+S6_HEAD_LR = 1e-3
+S6_HEAD_PATIENCE = 3
+# Varianti confrontate nel notebook 03e (stessa ricetta, dati diversi)
+S6_VARIANTI = ("base", "elementi")
+S6_AUGMENT = "light"          # augmentation forte + variazioni di luce del giorno
+# Accettazione: sul validation WikiChurches perde al massimo S6_MAX_LOSS di macro-F1 rispetto al modello a 4
+# stili, e sulle foto Wikidata dei 4 stili originali non va peggio.
+S6_MAX_LOSS = 0.03
 
 # Early stopping sulla loss di validazione (valore predefinito)
 PATIENCE = 4

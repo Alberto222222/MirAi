@@ -8,7 +8,7 @@ Rinascimentale o Barocco** — mostrando *dove* la rete ha guardato per decidere
 ## Pipeline
 
 ```
-Foto ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──► softmax a 4 stili
+Foto 448×448 ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──► softmax a 4 stili
                      │
                      └──► Grad-CAM / LIME ──► zone decisive (portali, rosoni, archi…)
 ```
@@ -22,7 +22,8 @@ Foto ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──► softmax
 | 4b. Miglioramenti | M3 (VGG-16 blocchi 4-5), ConvNeXt-Tiny, scelta del modello finale | ✅ |
 | 4c. Dati esterni | MonuMAI nel training per il Rinascimentale: esperimento respinto sul validation | ✅ |
 | 4d. Mappa di Kohonen | SOM sulle 512 caratteristiche del modello finale, chiese simili | ✅ |
-| 4e. Alta risoluzione | M3 con immagini 448 × 448 (due addestramenti), confronto con 224 | ⏳ |
+| 4e. Alta risoluzione | M3 con immagini 448 × 448: nuovo modello finale | ✅ |
+| 4f. Sei stili | monumenti di ogni tipo da Wikidata (+ Classico antico, Neoclassico), elementi MonuMAI | ⏳ |
 | 5. Valutazione | accuracy, P/R/F1 per classe, matrice di confusione, McNemar | ☐ |
 | 6. Explainable AI | Grad-CAM, LIME, deletion test | ☐ |
 | 7. App | Gradio: stile + heatmap + descrizione di stile, elementi e monumento | ☐ |
@@ -35,7 +36,8 @@ Foto ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──► softmax
 | CNN da zero | 0,454 | 0,437 | 0,477 |
 | M1 VGG-16 congelata | 0,569 | 0,511 | 0,511 |
 | M2 VGG-16 fine-tuning blocco 5 | 0,653 | 0,585 | 0,573 |
-| **M3 VGG-16 fine-tuning blocchi 4-5 + TTA (finale)** | **0,677** | **0,588** | **0,577** |
+| M3 VGG-16 fine-tuning blocchi 4-5 + TTA (224 px) | 0,677 | 0,588 | 0,577 |
+| **M3 a 448 px + TTA (finale)** | **0,698** | **0,630** | **0,617** |
 | ConvNeXt-Tiny | 0,631 | 0,536 | 0,535 |
 
 Dettagli, matrici di confusione e test statistici in `docs/decisioni.md` e `reports/`.
@@ -56,6 +58,8 @@ MirAi/
 │   └── data/
 │       ├── wikichurches.py   download, indice, ridimensionamento, split, report
 │       ├── dataset.py        caricamento tf.data, data augmentation, pesi di classe
+│       ├── wikidata.py       monumenti da Wikidata/Commons: interrogazione, download, pulizia
+│                             (+ monumai.py: ritagli degli elementi architettonici)
 │       └── monumai.py        dataset esterno MonuMAI: download, duplicati (hash percettivo), annotazioni
 ├── data/splits/          splits.csv (solo percorsi ed etichette, niente immagini)
 ├── reports/              metriche (JSON/CSV), predizioni sul test, figure
@@ -75,7 +79,9 @@ Le immagini **non** stanno su GitHub: sono su Google Drive
 6. `notebooks/03c_dati_esterni.ipynb` (GPU): M3 con immagini MonuMAI aggiunte al training.
 7. `notebooks/01b_alta_risoluzione.ipynb` (CPU): immagini a 512 px sul lato corto.
 8. `notebooks/03d_alta_risoluzione.ipynb` (GPU): M3 a 448 × 448 e decisione sul modello finale.
-9. `notebooks/04_som.ipynb` (GPU): mappa di Kohonen dello spazio degli stili e chiese simili
+9. `notebooks/01c_monumenti_wikidata.ipynb` (GPU): dataset di monumenti a 6 stili da Wikidata, con pulizia.
+10. `notebooks/03e_sei_stili.ipynb` (GPU): modello a 6 stili e decisione.
+11. `notebooks/04_som.ipynb` (GPU): mappa di Kohonen dello spazio degli stili e chiese simili
    (usa la risoluzione indicata in `reports/metrics/modello_finale.json`).
 
 Ogni notebook si esegue dall'alto in basso.
@@ -93,4 +99,6 @@ Tutti i risultati usano `SEED = 42` (in `src/config.py`).
   based app for monumental heritage taxonomy and classification*, Neurocomputing 420 (2021).
   Dati: <https://github.com/ari-dasci/OD-MonuMAI> – licenza **CC BY 4.0**. Usato solo per il
   training (stili Gotico, Rinascimentale, Barocco); le immagini non sono incluse in questa repository.
+- **Wikidata / Wikimedia Commons** – dati Wikidata CC0; immagini con la licenza indicata su Commons
+  (colonna `source_url` di `data/splits/splits6_wikidata.csv`). Le immagini non sono incluse in questa repository.
 - Il codice di questa repository è distribuito a scopo didattico.

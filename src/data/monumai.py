@@ -47,14 +47,14 @@ def _monument(stem: str) -> str:
 
 
 def build_index(root: str | Path, styles=config.MONUMAI_STYLES) -> pd.DataFrame:
-    """Una riga per immagine: percorso originale, stile, etichetta, monumento."""
+    """Una riga per immagine: percorso originale, stile, etichetta (-1 per stili fuori dalle 4 classi), monumento."""
     rows = []
     label_of = {c: i for i, c in enumerate(config.CLASSES)}
     for style in styles:
         folder = Path(root) / style
         for f in sorted(folder.iterdir()):
             if f.is_file() and f.suffix.lower() in IMG_EXT:
-                rows.append({"src": str(f), "file": f.name, "style": style, "label": label_of[style],
+                rows.append({"src": str(f), "file": f.name, "style": style, "label": label_of.get(style, -1),
                              "monument": _monument(f.stem), "source": "monumai"})
     df = pd.DataFrame(rows)
     print("Immagini MonuMAI per stile:", df["style"].value_counts().reindex(styles).to_dict())
@@ -166,3 +166,45 @@ def save_to_drive(local_dir: str | Path = config.COLAB_MONUMAI_DIR,
         tar.add(local_dir, arcname=Path(local_dir).name)
     print(f"Salvato {tar_path} ({tar_path.stat().st_size / 1e6:.0f} MB)")
     return tar_path
+
+
+def element_crops(ann: pd.DataFrame, root: str | Path, out_dir: str | Path, element_style: dict[str, str],
+                  short_side: int, min_side: int = 100, margin: float = 0.15) -> pd.DataFrame:
+    """Ritagli degli elementi architettonici diagnostici (es. arco a sesto acuto → Gotico).
+
+    Si tengono solo gli elementi associati a uno stile e coerenti con lo stile dell'edificio, con lato
+    minimo min_side px nell'immagine originale; margine del 15% attorno al riquadro; lato corto portato
+    a short_side px. Restituisce una riga per ritaglio (percorso relativo a out_dir/.., stile, elemento)."""
+    out_dir = Path(out_dir)
+    label_of = {c: i for i, c in enumerate(config.CLASSES)}
+    ann = ann[ann["element"].map(element_style).eq(ann["style"])]
+    rows = []
+    for (style, fname), g in ann.groupby(["style", "file"]):
+        src = Path(root) / style / fname
+        if not src.exists():
+            alt = list((Path(root) / style).glob(Path(fname).stem + ".*"))
+            if not alt:
+                continue
+            src = alt[0]
+        try:
+            im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
+        except Exception:  # noqa: BLE001
+            continue
+        for k, r in enumerate(g.itertuples()):
+            sx = im.width / r.width if r.width else 1.0
+            sy = im.height / r.height if r.height else 1.0
+            x0, x1, y0, y1 = r.xmin * sx, r.xmax * sx, r.ymin * sy, r.ymax * sy
+            w, h = x1 - x0, y1 - y0
+            if min(w, h) < min_side:
+                continue
+            box = (max(0, x0 - margin * w), max(0, y0 - margin * h), min(im.width, x1 + margin * w),
+                   min(im.height, y1 + margin * h))
+            crop = im.crop(tuple(round(v) for v in box))
+            s = short_side / min(crop.size)
+            crop = crop.resize((round(crop.width * s), round(crop.height * s)), Image.LANCZOS)
+            rel = f"{out_dir.name}/{style}/{Path(fname).stem}_{k}.jpg"
+            (out_dir / style).mkdir(parents=True, exist_ok=True)
+            crop.save(out_dir.parent / rel, "JPEG", quality=92)
+            rows.append({"path": rel, "style": style, "label": label_of[style], "element": r.element,
+                         "monument": _monument(Path(fname).stem), "source_file": f"{style}/{fname}"})
+    return pd.DataFrame(rows)

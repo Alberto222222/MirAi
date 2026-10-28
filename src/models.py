@@ -18,12 +18,12 @@ from tensorflow import keras
 from src import config
 
 layers = keras.layers
-NUM_CLASSES = len(config.CLASSES)
 
 
-def build_cnn_baseline(size: int = config.IMG_SIZE, num_classes: int = NUM_CLASSES,
+def build_cnn_baseline(size: int = config.IMG_SIZE, num_classes: int | None = None,
                        filters=(32, 64, 128, 256), dropout: float = 0.3,
                        bn_momentum: float = config.CNN_BN_MOMENTUM) -> keras.Model:
+    num_classes = num_classes or len(config.CLASSES)
     inp = keras.Input((size, size, 3), name="image")
     x = layers.Rescaling(1.0 / 255, name="rescale")(inp)
     for i, f in enumerate(filters, start=1):
@@ -37,9 +37,10 @@ def build_cnn_baseline(size: int = config.IMG_SIZE, num_classes: int = NUM_CLASS
     return keras.Model(inp, out, name="cnn_baseline")
 
 
-def build_vgg16_head(size: int = config.IMG_SIZE, num_classes: int = NUM_CLASSES,
+def build_vgg16_head(size: int = config.IMG_SIZE, num_classes: int | None = None,
                      hidden: int = config.HEAD_HIDDEN,
                      dropout: float = config.HEAD_DROPOUT) -> keras.Model:
+    num_classes = num_classes or len(config.CLASSES)
     base = keras.applications.VGG16(include_top=False, weights="imagenet",
                                     input_shape=(size, size, 3))
     for layer in base.layers:
@@ -61,6 +62,32 @@ def vgg16_at_size(model: keras.Model, size: int) -> keras.Model:
     return new
 
 
+def vgg16_more_classes(model: keras.Model, num_classes: int, size: int | None = None) -> keras.Model:
+    """Stessa VGG-16 con testa, ma con più classi in uscita: tutti i pesi vengono copiati;
+    nello strato finale le colonne delle classi esistenti restano, quelle nuove partono da zero
+    (pesi iniziali casuali dello strato appena costruito)."""
+    size = size or model.input_shape[1]
+    new = build_vgg16_head(size=size, num_classes=num_classes)
+    for layer in new.layers:
+        if not layer.weights:                       # ingresso, pooling, dropout: niente da copiare
+            continue
+        old = model.get_layer(layer.name)
+        if layer.name != "predictions":
+            layer.set_weights(old.get_weights())
+        else:
+            (k_old, b_old), (k_new, b_new) = old.get_weights(), layer.get_weights()
+            n = k_old.shape[1]
+            k_new[:, :n], b_new[:n] = k_old, b_old
+            layer.set_weights([k_new, b_new])
+    return new
+
+
+def freeze_backbone(model: keras.Model) -> None:
+    """Solo la testa resta addestrabile."""
+    for layer in model.layers:
+        layer.trainable = layer.name in HEAD_LAYERS
+
+
 def load(path) -> keras.Model:
     """Carica un modello salvato in formato .keras."""
     return keras.models.load_model(str(path))
@@ -77,11 +104,12 @@ def _add_head(x, num_classes: int, hidden: int, dropout: float):
     return layers.Dense(num_classes, activation="softmax", name="predictions")(x)
 
 
-def build_convnext_head(size: int = config.IMG_SIZE, num_classes: int = NUM_CLASSES,
+def build_convnext_head(size: int = config.IMG_SIZE, num_classes: int | None = None,
                         hidden: int = config.HEAD_HIDDEN,
                         dropout: float = config.HEAD_DROPOUT) -> keras.Model:
     """ConvNeXt-Tiny pre-addestrata su ImageNet (backbone congelato) con la stessa testa di M1.
     La rete contiene già la sua pre-elaborazione: l'ingresso sono pixel RGB in [0, 255]."""
+    num_classes = num_classes or len(config.CLASSES)
     base = keras.applications.ConvNeXtTiny(include_top=False, weights="imagenet",
                                            input_shape=(size, size, 3), include_preprocessing=True)
     for layer in base.layers:

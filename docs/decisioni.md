@@ -343,3 +343,101 @@ Regole fissate prima: due addestramenti a 448 px (semi 42 e 43) contro i due a 2
 (M3 del 03b e controllo del 03c), tutti con TTA; il 448 si accetta se la media della macro-F1 di validation
 migliora di almeno 0,03 (circa una deviazione standard tra addestramenti); il test si usa una sola volta, dopo
 la decisione. Tempo massimo: una sessione. È l'ultimo intervento sul modello; dopo, il modello si congela.
+
+**Risultati del notebook 03d.** Immagini a 512 px: 7.525 su 7.525, 279 (3,7%) con lato corto originale
+sotto i 448 px. Download con 16 connessioni parallele (Zenodo limita la singola connessione).
+
+Validation (1.082 immagini, con TTA):
+
+| Modello | Accuracy | Macro-F1 | F1 Rinasc. |
+|---|---|---|---|
+| 224 px – M3 (03b) / controllo (03c) | 0,719 / 0,689 | 0,639 / 0,597 (media 0,618) | 0,395 / 0,300 |
+| 448 px – seme 42 | 0,726 | 0,638 | 0,375 |
+| 448 px – seme 43 | 0,735 | **0,690** | 0,577 |
+
+Media a 448 px 0,664, Δ = +0,046 ≥ 0,03 → **accettato**; nuovo modello finale **M3 448 seme 43 + TTA**.
+La differenza tra i due semi a 448 (0,052) conferma la variabilità tra addestramenti già misurata.
+
+Test ufficiale (1.481 immagini):
+
+| Modello | Accuracy | Macro-F1 | Balanced acc. | F1 Rom. | F1 Got. | F1 Rin. | F1 Bar. |
+|---|---|---|---|---|---|---|---|
+| M3 224 + TTA (finale precedente) | 0,677 | 0,588 | 0,577 | 0,678 | 0,711 | 0,272 | 0,692 |
+| M3 448 seme 42 + TTA | 0,685 | 0,610 | 0,602 | 0,670 | 0,721 | 0,333 | 0,715 |
+| **M3 448 seme 43 + TTA (finale)** | **0,698** | **0,630** | **0,617** | 0,719 | 0,733 | 0,385 | 0,685 |
+
+- Entrambi gli addestramenti a 448 superano il 224 su tutte le metriche aggregate; il guadagno di balanced
+  accuracy (+0,040) è in linea con quello riportato dagli autori di WikiChurches (+4,2 punti).
+- Rinascimentale: recall da 0,17 a 0,31, confusione con il Barocco dal 56% al 43%. È l'unico intervento che ha
+  migliorato questa classe: a 224 px i dettagli distintivi andavano persi.
+- Recall del Barocco da 0,72 a 0,66: parte delle foto barocche è ora classificata come rinascimentale (6%).
+- McNemar 224 vs finale: b = 104, c = 135, p ≈ 0,052, al limite della significatività al 5%. Il miglioramento è
+  sostenuto dalla coerenza tra validation, test, due semi e letteratura, ma da solo non è significativo.
+- La TTA resta un effetto nel rumore (seme 43 sul test: 0,643 senza, 0,630 con); si mantiene la scelta fatta sul
+  validation.
+
+Il modello si congela: M3 448 seme 43 + TTA.
+
+## D15 – Foto fuori dominio (notebook 04)
+Il classificatore è a insieme chiuso: un edificio di un altro stile (ad esempio un monumento romano antico come il
+Colosseo) riceve comunque uno dei quattro stili, spesso con confidenza alta, e nessuna metrica sul test lo misura.
+Nell'app la foto viene quindi filtrata con un punteggio di «distanza da ciò che la rete conosce»; sopra la soglia la
+risposta è «stile non riconosciuto».
+
+Punteggi confrontati: 1 − confidenza della softmax; distanza media dai 5 vicini nelle caratteristiche delle foto di
+training (coseno); errore di quantizzazione della SOM. Soglia = 95° percentile del punteggio sul validation (il 95%
+delle chiese vere è accettato). Foto fuori dominio: le 327 immagini Ispano-musulmane di MonuMAI, divise per
+monumento in due metà (una per scegliere il punteggio, l'altra per riportare il risultato con il test).
+Limite: le foto MonuMAI differiscono anche per tipo di inquadratura, non solo per stile.
+
+## D16 – Estensione a 6 stili e a monumenti di ogni tipo (notebook 01c e 03e)
+Obiettivo dell'applicazione: riconoscere lo stile di qualsiasi monumento, non solo delle chiese. WikiChurches contiene
+solo chiese e solo 4 stili; un monumento romano antico come il Colosseo riceverebbe comunque uno dei 4 stili.
+
+Stili: Romanico, Gotico, Rinascimentale, Barocco, **Classico antico** (romano e greco) e **Neoclassico**.
+Il Neoclassico evita che gli edifici sette-ottocenteschi con colonne e timpani finiscano nel Classico o nel
+Rinascimentale.
+
+**Dati.** Edifici di ogni tipo da Wikidata con stile architettonico (P149, sotto-stili inclusi tramite P279*) e immagine
+(P18), un'immagine per edificio da Wikimedia Commons, al massimo 1.500 per stile, ridotte a 512 px sul lato corto.
+Stessa fonte di WikiChurches (Wikidata + Commons), senza limitarsi alle chiese. Circa 9.000 immagini in più: l'obiettivo
+non è la quantità ma coprire tipi di edificio e stili mancanti.
+
+**Pulizia delle etichette rumorose e confronto tra dataset.**
+1. edifici con stili di classi diverse scartati; chiese già in WikiChurches escluse (stesso codice Wikidata);
+2. immagini con lato corto < 400 px o proporzioni > 2,5 scartate;
+3. duplicati identici (hash percettivo ≤ 8 bit) rispetto a WikiChurches, MonuMAI e alle altre foto Wikidata;
+4. filtro «è un edificio?»: somma delle probabilità ImageNet delle classi architettoniche (VGG-16 originale) sotto il
+   5° percentile delle foto WikiChurches → scartata;
+5. stesso soggetto: foto diverse dello stesso edificio dalla stessa angolazione (similarità del coseno ≥ 0,95 tra le
+   caratteristiche ImageNet) rispetto a WikiChurches, MonuMAI e alle altre foto Wikidata → scartate. Impedisce che un
+   edificio di validation/test entri nel training sotto un altro codice Wikidata;
+6. solo training: regressione logistica sulle caratteristiche ImageNet con validazione incrociata a 5 fold; le foto con
+   probabilità fuori fold del proprio stile < 0,05 sono considerate etichettate male e tolte.
+I passi 1–5 valgono per tutti gli insiemi, il 6 solo per il training: validation e test non vengono «ripuliti» con un
+modello e restano una misura onesta. Split per edificio 70/15/15. Il notebook riporta, per ogni coppia di dataset, il
+numero di duplicati identici e di foto dello stesso soggetto.
+
+**Elementi che distinguono gli stili.** Dalle annotazioni degli esperti di MonuMAI si ritagliano gli elementi
+diagnostici (arco a sesto acuto, arco inflesso, arco trilobato, pinnacolo → Gotico; timpano triangolare, timpano curvo,
+serliana → Rinascimentale; timpano spezzato, colonna tortile → Barocco), solo se coerenti con lo stile dell'edificio e
+con lato ≥ 100 px, al massimo 400 per stile, escluse le foto MonuMAI che duplicano WikiChurches. Le foto intere di
+MonuMAI non avevano aiutato (03c, dominio diverso); i ritagli mostrano invece i dettagli su cui si basa lo stile.
+
+**Luce.** Augmentation forte più variazioni di luce del giorno: correzione gamma 0,75–1,35 e dominante calda/fredda ±8%.
+
+**Modello.** La rete finale a 448 px con lo strato di uscita esteso da 4 a 6 classi (pesi delle 4 classi esistenti
+conservati); fase 1 solo testa (learning rate 1·10⁻³), fase 2 blocchi 4-5 (1·10⁻⁵). Due varianti con la stessa
+ricetta: **base** (WikiChurches + Wikidata) ed **elementi** (+ ritagli MonuMAI). Un solo addestramento per variante
+(limiti di tempo): differenze tra varianti inferiori a ~0,04 di macro-F1 sono nel rumore.
+
+**Accettazione**, fissata prima e valutata sul validation: (a) sulle chiese WikiChurches la macro-F1 dei 4 stili perde
+al massimo 0,03 rispetto al modello a 4 stili; (b) sulle foto Wikidata dei 4 stili originali non va peggio. Tra le
+varianti valide si sceglie la migliore macro-F1 sul validation Wikidata a 6 stili. Se nessuna è valida, l'app usa il
+modello a 4 stili con il filtro delle foto fuori dominio (D15). Il modello a 4 stili resta comunque salvato.
+
+**Metriche aggiuntive** sul test: top-2 accuracy; accuratezza delle risposte sicure con soglia di confidenza scelta sul
+validation (la più bassa con accuratezza ≥ 85%) e relativa copertura; robustezza alla luce (sera, sole forte, tramonto,
+cielo coperto). L'85–90% come accuratezza su tutte le foto non è un obiettivo realistico: solo l'86% delle etichette di
+WikiChurches è del tutto corretto secondo la verifica di un esperto, e molti edifici sono di transizione tra due stili.
+L'app risponde quindi con sicurezza sopra la soglia e in modo graduato sotto.
