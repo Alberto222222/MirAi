@@ -37,13 +37,19 @@ UA = {"User-Agent": "MirAi-student-project/1.0 (https://github.com/Alberto222222
 IMG_EXT = (".jpg", ".jpeg", ".png", ".webp")
 
 
-def _sparql(query: str, tries: int = 4) -> list[dict]:
+def _sparql(query: str, tries: int = 5) -> list[dict]:
+    """Interroga Wikidata; riprova con attese crescenti se il servizio è lento o non risponde."""
+    err = ""
     for t in range(tries):
-        r = requests.get(SPARQL, params={"query": query, "format": "json"}, headers=UA, timeout=120)
-        if r.status_code == 200:
-            return r.json()["results"]["bindings"]
+        try:
+            r = requests.get(SPARQL, params={"query": query, "format": "json"}, headers=UA, timeout=90)
+            if r.status_code == 200:
+                return r.json()["results"]["bindings"]
+            err = f"HTTP {r.status_code}"
+        except (requests.RequestException, ValueError) as e:
+            err = type(e).__name__
         time.sleep(10 * (t + 1))
-    raise RuntimeError(f"Wikidata non risponde (HTTP {r.status_code})")
+    raise RuntimeError(f"Wikidata non risponde ({err}) – riprovare tra qualche minuto")
 
 
 def _qid(uri: str) -> str:
@@ -153,23 +159,23 @@ def resolve_items(raw: pd.DataFrame, exclude: set[str]) -> tuple[pd.DataFrame, d
     return df, stats
 
 
-def add_labels(df: pd.DataFrame) -> pd.DataFrame:
-    """Nome dell'edificio, Paese e tipo (es. palazzo, castello), in italiano se disponibile."""
-    rows = []
-    ids = df["item"].tolist()
-    for i in range(0, len(ids), 200):
-        vals = " ".join(f"wd:{q}" for q in ids[i:i + 200])
-        q = f"""SELECT ?item (SAMPLE(?l) AS ?name) (SAMPLE(?cl) AS ?country) (SAMPLE(?tl) AS ?type)
-                (SAMPLE(?co) AS ?coord) WHERE {{ VALUES ?item {{ {vals} }}
-                OPTIONAL {{ ?item rdfs:label ?l FILTER(lang(?l) IN ("it", "en")) }}
-                OPTIONAL {{ ?item wdt:P17 ?c . ?c rdfs:label ?cl FILTER(lang(?cl) = "it") }}
-                OPTIONAL {{ ?item wdt:P31 ?t . ?t rdfs:label ?tl FILTER(lang(?tl) = "it") }}
-                OPTIONAL {{ ?item wdt:P625 ?co }} }} GROUP BY ?item"""
-        for b in _sparql(q):
-            rows.append({"item": _qid(b["item"]["value"]), **{k: b.get(k, {}).get("value", "")
-                                                            for k in ("name", "country", "type", "coord")}})
-    lab = pd.DataFrame(rows)
-    return df.merge(lab.drop(columns=["coord"]), on="item", how="left")
+def add_labels(df: pd.DataFrame, chunk: int = 80) -> pd.DataFrame:
+    """Nome dell'edificio, Paese e tipo (es. palazzo, castello), in italiano se disponibile.
+    Informazioni accessorie: se Wikidata non risponde per un gruppo, quei campi restano vuoti."""
+    rows, ids = [], df["item"].tolist()
+    for i in range(0, len(ids), chunk):
+        vals = " ".join(f"wd:{q}" for q in ids[i:i + chunk])
+        q = f"""SELECT ?item ?itemLabel ?cLabel ?tLabel WHERE {{ VALUES ?item {{ {vals} }}
+                OPTIONAL {{ ?item wdt:P17 ?c }} OPTIONAL {{ ?item wdt:P31 ?t }}
+                SERVICE wikibase:label {{ bd:serviceParam wikibase:language "it,en". }} }}"""
+        try:
+            for b in _sparql(q, tries=3):
+                rows.append({"item": _qid(b["item"]["value"]), "name": b.get("itemLabel", {}).get("value", ""),
+                             "country": b.get("cLabel", {}).get("value", ""), "type": b.get("tLabel", {}).get("value", "")})
+        except RuntimeError:
+            print(f"  nomi non disponibili per il gruppo {i // chunk + 1}: proseguo")
+    lab = pd.DataFrame(rows, columns=["item", "name", "country", "type"]).drop_duplicates("item")
+    return df.merge(lab, on="item", how="left")
 
 
 # ---------------------------------------------------------------------------
