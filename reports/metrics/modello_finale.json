@@ -1,10 +1,14 @@
 {
- "modello": "M3 VGG-16 blocchi 4-5 + TTA",
- "file": "/content/drive/MyDrive/mirai_data/models/vgg16_m3.keras",
- "pesi": "/content/drive/MyDrive/mirai_data/models/vgg16_m3.best.weights.h5",
+ "modello": "M3 448 seme 43 + TTA",
+ "file": "/content/drive/MyDrive/mirai_data/models/vgg16_m3_448_s43.keras",
+ "pesi": "/content/drive/MyDrive/mirai_data/models/vgg16_m3_448_s43.best.weights.h5",
  "preprocessing": "vgg",
  "tta": true,
- "macro_f1_val": 0.6391190075014905,
- "macro_f1_test": 0.5881889053735929,
- "accuracy_test": 0.6765698852126941
+ "img_size": 448,
+ "img_short_side": 512,
+ "tar": "wikichurches4_512.tar",
+ "batch_size": 16,
+ "macro_f1_val": 0.6900838817278938,
+ "macro_f1_test": 0.6304055175995636,
+ "accuracy_test": 0.6975016880486158
 }

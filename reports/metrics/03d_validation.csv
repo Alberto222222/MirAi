@@ -1,0 +1,5 @@
+modello,accuracy,macro-F1,balanced accuracy,F1 Romanico,F1 Gotico,F1 Rinascimentale,F1 Barocco
+M3 448 seme 42,0.713,0.632,0.626,0.662,0.777,0.39,0.699
+M3 448 seme 42 + TTA,0.726,0.638,0.63,0.686,0.789,0.375,0.703
+M3 448 seme 43,0.728,0.677,0.662,0.679,0.789,0.544,0.695
+M3 448 seme 43 + TTA,0.735,0.69,0.674,0.681,0.793,0.577,0.71
