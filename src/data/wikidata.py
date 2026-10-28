@@ -215,23 +215,40 @@ def _download_one(row, out_dir: Path, width: int) -> dict:
     return res
 
 
+def _extract_safe(tar_path: Path, dest: Path) -> int:
+    """Estrae un archivio; se è danneggiato (es. scrittura interrotta) estrae quanto possibile e prosegue."""
+    n = 0
+    try:
+        with tarfile.open(tar_path) as tar:
+            for m in tar:
+                try:
+                    tar.extract(m, dest, filter="data")
+                    n += 1
+                except Exception:  # noqa: BLE001
+                    pass
+    except Exception:  # noqa: BLE001
+        print(f"  archivio danneggiato ignorato: {tar_path.name}")
+    return n
+
+
 def download(df: pd.DataFrame, root: str | Path = config.COLAB_PROCESSED_DIR_HR,
              width: int = config.WD_THUMB_WIDTH, workers: int = 6,
              checkpoint_tar: str | Path | None = None, batch: int = 1000) -> pd.DataFrame:
     """Scarica e ridimensiona (lato corto 512 px) in <root>/wikidata/<stile>/<QID>.jpg.
 
-    Con checkpoint_tar (un file su Google Drive) il download è riprendibile: all'avvio si ripristinano le foto
-    già salvate, e ogni `batch` foto le nuove vengono aggiunte all'archivio. Se il runtime si interrompe,
-    basta rieseguire: si riparte dall'ultimo salvataggio."""
+    Con checkpoint_tar il download è riprendibile: ogni `batch` foto le nuove vengono salvate in un archivio
+    separato nella cartella <checkpoint_tar senza .tar>_parti su Google Drive (scritto prima sul disco locale e
+    poi copiato: Drive non gestisce bene la scrittura in aggiunta). All'avvio si ripristinano tutte le parti."""
+    import shutil
     root = Path(root)
     out_dir = root / "wikidata"
-    if checkpoint_tar and Path(checkpoint_tar).exists():
-        with tarfile.open(checkpoint_tar) as tar:
-            try:
-                tar.extractall(root.parent, filter="data")
-            except TypeError:
-                tar.extractall(root.parent)
-        print(f"  ripristinate dal salvataggio intermedio: {sum(1 for _ in out_dir.rglob('*.jpg'))} foto")
+    parts = None
+    if checkpoint_tar:
+        parts = Path(str(checkpoint_tar).removesuffix(".tar") + "_parti")
+        parts.mkdir(parents=True, exist_ok=True)
+        n = sum(_extract_safe(t, root.parent) for t in sorted(parts.glob("*.tar")))
+        if n:
+            print(f"  ripristinate dai salvataggi intermedi: {n} foto")
     results = []
     rows = list(df.itertuples())
     for start in range(0, len(rows), batch):
@@ -239,15 +256,17 @@ def download(df: pd.DataFrame, root: str | Path = config.COLAB_PROCESSED_DIR_HR,
         nuove = [r for r in part if not (out_dir / r.style / f"{r.item}.jpg").exists()]
         with ThreadPoolExecutor(workers) as ex:
             results += [f.result() for f in as_completed([ex.submit(_download_one, r, out_dir, width) for r in part])]
-        if checkpoint_tar and nuove:
-            Path(checkpoint_tar).parent.mkdir(parents=True, exist_ok=True)
-            with tarfile.open(checkpoint_tar, "a") as tar:
+        if parts is not None and nuove:
+            local = root.parent / f"_parte_{start:06d}.tar"
+            with tarfile.open(local, "w") as tar:
                 for r in nuove:
                     f = out_dir / r.style / f"{r.item}.jpg"
                     if f.exists():
                         tar.add(f, arcname=f"{root.name}/wikidata/{r.style}/{r.item}.jpg")
+            shutil.copy(local, parts / local.name.lstrip("_"))
+            local.unlink()
         print(f"  scaricate {min(start + batch, len(rows))}/{len(rows)}"
-              + (" – salvate su Drive" if checkpoint_tar else ""))
+              + (" – salvate su Drive" if parts is not None else ""))
     res = pd.DataFrame(results)
     return df.merge(res, on="item", how="left")
 
