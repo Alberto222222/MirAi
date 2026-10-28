@@ -404,7 +404,7 @@ Stessa fonte di WikiChurches (Wikidata + Commons), senza limitarsi alle chiese. 
 Mediterraneo (latitudine 30–72°, longitudine −25–45°): la guida è pensata per monumenti europei, e senza questo
 limite il Neoclassico sarebbe dominato dalle case coloniali nordamericane. I monumenti antichi su Wikidata hanno
 raramente la proprietà «stile» (solo 259 con immagine): per il Classico antico si aggiungono gli edifici dei tipi
-tempio romano e greco, teatro romano e greco, anfiteatro romano, arco di trionfo romano, acquedotto romano. Circa 9.000 immagini in più: l'obiettivo
+tempio romano e greco, teatro romano e greco, anfiteatro romano. Circa 9.000 immagini in più: l'obiettivo
 non è la quantità ma coprire tipi di edificio e stili mancanti.
 
 **Pulizia delle etichette rumorose e confronto tra dataset.**

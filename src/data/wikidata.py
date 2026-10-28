@@ -80,14 +80,11 @@ def search_style(label: str) -> dict:
 
 
 def resolve_roots() -> dict[str, list[str]]:
-    """QID radice di ogni stile: i 4 di WikiChurches sono fissi, i nuovi si cercano per nome."""
+    """QID radice di ogni stile: i 4 di WikiChurches e i 2 nuovi, fissati in config."""
     roots = {c: [config.STYLE_QIDS[c]] for c in config.CLASSES[:4]}
-    for c, labels in config.WIKIDATA_STYLE_SEARCH.items():
-        roots[c] = []
-        for lab in labels:
-            hit = search_style(lab)
-            print(f"{c:13s} «{lab}» → {hit['qid']} {hit['label']} – {hit['description']}")
-            roots[c].append(hit["qid"])
+    roots.update({c: list(q) for c, q in config.WIKIDATA_STYLE_QIDS_NEW.items()})
+    for c, qs in roots.items():
+        print(f"{c:13s} → {', '.join(qs)}")
     return roots
 
 
@@ -122,18 +119,18 @@ def _row(b: dict, style: str, substyle: str) -> dict:
             "image": b["image"]["value"], "lon": co.iloc[0, 0], "lat": co.iloc[0, 1]}
 
 
-def items_by_type(style: str, type_labels: list[str]) -> tuple[pd.DataFrame, pd.DataFrame]:
+def items_by_type(style: str, types: dict[str, str]) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Edifici riconosciuti dal TIPO invece che dalla proprietà «stile» (es. tempio romano, anfiteatro romano):
     su Wikidata i monumenti antichi raramente hanno P149. Tipi inclusi anche nei sotto-tipi (P279*)."""
     tipi, rows = [], []
-    for lab in type_labels:
-        hit = search_style(lab)
-        print(f"{style:13s} tipo «{lab}» → {hit['qid']} {hit['label']} – {hit['description']}")
-        tipi.append({"style": style, "qid": hit["qid"], "name": f"[tipo] {hit['label']}"})
+    for qid, lab in types.items():
         q = f"""SELECT ?item (SAMPLE(?img) AS ?image) (SAMPLE(?co) AS ?coord) WHERE {{
-                ?item wdt:P31/wdt:P279* wd:{hit['qid']} ; wdt:P18 ?img . OPTIONAL {{ ?item wdt:P625 ?co }} }}
+                ?item wdt:P31/wdt:P279* wd:{qid} ; wdt:P18 ?img . OPTIONAL {{ ?item wdt:P625 ?co }} }}
                 GROUP BY ?item"""
-        rows += [_row(b, style, hit["qid"]) for b in _sparql(q)]
+        b = _sparql(q)
+        print(f"{style:13s} tipo {qid} «{lab}»: {len(b)} edifici con immagine")
+        tipi.append({"style": style, "qid": qid, "name": f"[tipo] {lab}"})
+        rows += [_row(x, style, qid) for x in b]
     return pd.DataFrame(rows), pd.DataFrame(tipi)
 
 

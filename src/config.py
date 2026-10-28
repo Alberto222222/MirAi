@@ -136,16 +136,15 @@ BATCH_SIZE_HR = 16
 # supera di almeno DELTA_HR la media dei due addestramenti a 224 px (03b e controllo del 03c).
 DELTA_HR = 0.03
 
-# Dataset di monumenti da Wikidata (notebook 01c): stili cercati per nome, sotto-stili inclusi
-WIKIDATA_STYLE_SEARCH = {
-    "Classical": ["ancient Roman architecture", "ancient Greek architecture"],
-    "Neoclassical": ["Neoclassical architecture"],
-}
+# Dataset di monumenti da Wikidata (notebook 01c): QID degli stili nuovi (sotto-stili inclusi), verificati sulla
+# descrizione Wikidata: Q223750 «ancient Roman architecture», Q331273 «ancient Greek architecture»,
+# Q54111 «Neoclassical architecture».
+WIKIDATA_STYLE_QIDS_NEW = {"Classical": ["Q223750", "Q331273"], "Neoclassical": ["Q54111"]}
 # I monumenti antichi su Wikidata raramente hanno la proprietà «stile»: per il Classico antico si aggiungono gli
-# edifici di questi tipi (e sotto-tipi)
-WIKIDATA_TYPE_SEARCH = {
-    "Classical": ["Roman temple", "ancient Greek temple", "Roman theatre", "ancient Greek theatre",
-                  "Roman amphitheatre", "Roman triumphal arch", "Roman aqueduct"],
+# edifici di questi tipi (e sotto-tipi), verificati sulla descrizione Wikidata.
+WIKIDATA_TYPE_QIDS = {
+    "Classical": {"Q867143": "Roman temple", "Q267596": "ancient Greek temple", "Q19757": "Roman theatre",
+                  "Q2860319": "Greek theatre", "Q7362268": "Roman amphitheatre"},
 }
 # Area geografica: Europa e Mediterraneo (la guida è pensata per monumenti europei; esclude ad es. le case
 # coloniali nordamericane etichettate come neoclassiche)
