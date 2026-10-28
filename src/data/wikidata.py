@@ -54,11 +54,29 @@ def _qid(uri: str) -> str:
 # 1. Stili e conteggi
 # ---------------------------------------------------------------------------
 def search_style(label: str) -> dict:
-    """Cerca uno stile per nome inglese; restituisce il primo risultato con la descrizione da verificare."""
-    r = requests.get(API, params={"action": "wbsearchentities", "search": label, "language": "en",
-                                  "type": "item", "limit": 1, "format": "json"}, headers=UA, timeout=30)
-    hit = r.json()["search"][0]
-    return {"qid": hit["id"], "label": hit.get("label", ""), "description": hit.get("description", "")}
+    """Cerca uno stile per nome inglese e restituisce il primo risultato con la descrizione da verificare.
+
+    Prima la ricerca di Wikidata (wbsearchentities); se non risponde, la ricerca esatta dell'etichetta
+    via SPARQL (con e senza iniziale maiuscola), preferendo gli elementi che sono stili architettonici."""
+    try:
+        r = requests.get(API, params={"action": "wbsearchentities", "search": label, "language": "en",
+                                      "uselang": "en", "type": "item", "limit": 1, "format": "json"},
+                         headers=UA, timeout=30)
+        js = r.json()
+        if js.get("search"):
+            hit = js["search"][0]
+            return {"qid": hit["id"], "label": hit.get("label", ""), "description": hit.get("description", "")}
+        print(f"  ricerca Wikidata senza risultati per «{label}» (HTTP {r.status_code}): {str(js)[:200]}")
+    except Exception as e:  # noqa: BLE001
+        print(f"  ricerca Wikidata non disponibile ({type(e).__name__}), uso SPARQL")
+    varianti = " ".join(f'"{v}"@en' for v in {label, label.lower(), label[:1].upper() + label[1:]})
+    q = f"""SELECT ?s ?d (COUNT(?x) AS ?n) WHERE {{ VALUES ?l {{ {varianti} }} ?s rdfs:label ?l .
+            OPTIONAL {{ ?s schema:description ?d FILTER(lang(?d) = "en") }}
+            OPTIONAL {{ ?x wdt:P149 ?s }} }} GROUP BY ?s ?d ORDER BY DESC(?n)"""
+    b = _sparql(q)
+    if not b:
+        raise ValueError(f"stile «{label}» non trovato su Wikidata")
+    return {"qid": _qid(b[0]["s"]["value"]), "label": label, "description": b[0].get("d", {}).get("value", "")}
 
 
 def resolve_roots() -> dict[str, list[str]]:
