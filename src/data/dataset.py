@@ -157,17 +157,22 @@ def load_image_for_model(path: str | Path, kind: str = "vgg") -> tf.Tensor:
 def make_dataset(df: pd.DataFrame, root: str | Path, training: bool, kind: str = "vgg",
                  class_weight: dict[int, float] | None = None,
                  batch_size: int = config.BATCH_SIZE, seed: int = config.SEED,
-                 augment: str = "basic", view: str = "center") -> tf.data.Dataset:
+                 augment: str = "basic", view: str = "center", cache: str | None = "") -> tf.data.Dataset:
     """Restituisce batch (x, y) oppure (x, y, peso) se class_weight è indicato.
 
     augment (solo training): "basic" oppure "strong".
     view (solo valutazione): "center" = ritaglio centrale, "flip" = ritaglio centrale ribaltato
     (le due viste servono al test-time augmentation).
+    cache: "" = immagini decodificate tenute in memoria; un percorso = cache su disco
+    (per le immagini ad alta risoluzione, che non entrano nella RAM); None = nessuna cache
+    (una sola lettura, es. estrazione delle caratteristiche).
     """
     paths = [str(Path(root) / p) for p in df["path"]]
     labels = df["label"].to_numpy(dtype=np.int32)
     ds = tf.data.Dataset.from_tensor_slices((paths, labels))
-    ds = ds.map(lambda p, y: (_load(p), y), num_parallel_calls=AUTOTUNE).cache()
+    ds = ds.map(lambda p, y: (_load(p), y), num_parallel_calls=AUTOTUNE)
+    if cache is not None:
+        ds = ds.cache(cache)
     if training:
         ds = ds.shuffle(min(len(paths), 2000), seed=seed, reshuffle_each_iteration=True)
         aug = _augment_strong if augment == "strong" else _augment

@@ -121,6 +121,15 @@ SOM_ALPHA0 = 0.5              # tasso di apprendimento iniziale
 SOM_SIGMA0 = 9.0              # raggio iniziale del vicinato (metà del lato della griglia)
 KNN_K = 5                     # chiese simili mostrate dall'app
 
+# Esperimento ad alta risoluzione (notebook 01b e 03d): immagini a 512 px sul lato corto,
+# ritaglio 448x448 (stesso rapporto 0,875 di 224/256), batch ridotto per la memoria della GPU.
+IMG_SHORT_SIDE_HR = 512
+IMG_SIZE_HR = 448
+BATCH_SIZE_HR = 16
+# Il modello a 448 px si accetta se la media della macro-F1 di validation di due addestramenti
+# supera di almeno DELTA_HR la media dei due addestramenti a 224 px (03b e controllo del 03c).
+DELTA_HR = 0.03
+
 # Early stopping sulla loss di validazione (valore predefinito)
 PATIENCE = 4
 
@@ -134,4 +143,6 @@ PROCESSED_TAR_NAME = "wikichurches4_256.tar"
 COLAB_MONUMAI_RAW = "/content/monumai_raw"   # repository MonuMAI originale
 COLAB_MONUMAI_DIR = "/content/monumai"       # immagini MonuMAI ridimensionate
 MONUMAI_TAR_NAME = "monumai_256.tar"
+COLAB_PROCESSED_DIR_HR = "/content/processed512"  # immagini a 512 px (esperimento 03d)
+PROCESSED_TAR_NAME_HR = "wikichurches4_512.tar"
 SPLITS_CSV = "data/splits/splits.csv"

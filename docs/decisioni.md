@@ -301,3 +301,45 @@ Uso dei risultati:
 - SOM come classificatore (etichetta del neurone vincitore) confrontata con la rete;
 - posizione degli errori sulla mappa (confini, regioni miste);
 - «chiese simili»: le 5 immagini più vicine nello spazio delle caratteristiche, mostrate dall'app.
+
+**Risultati del notebook 04**
+- Controllo: le caratteristiche provengono dal modello finale (accuracy 0,677, macro-F1 0,588 sul test,
+  identiche al notebook 03b).
+- Qualità della mappa: errore di quantizzazione da 20,7 (inizializzazione) a 19,3 sul training e 19,6 sul
+  test; errore topografico 0,068 sul training e 0,103 sul test, quindi la mappa conserva la vicinanza tra foto.
+  La curva dell'errore di quantizzazione sale nelle prime iterazioni (fase di ordinamento, raggio e passo
+  grandi) e poi scende senza arrivare a un plateau: con più iterazioni la quantizzazione migliorerebbe ancora.
+- Mappa degli stili: regioni compatte per il Barocco (in alto a destra) e per il Romanico (in basso),
+  Gotico esteso su gran parte della mappa (52% del training), zone miste tra Romanico e Gotico.
+  **Nessun neurone è rinascimentale**: le 55 foto rinascimentali del training non sono maggioranza in
+  nessun neurone.
+- SOM come classificatore sul test: accuracy 0,560, macro-F1 0,432 (rete: 0,677 e 0,588). Il 48% delle foto
+  romaniche cade in neuroni gotici, il 55% di quelle rinascimentali in neuroni barocchi. Lo stile è in parte
+  organizzato per vicinanza nello spazio delle caratteristiche; il resto della separazione è fatto dalla
+  testa non lineare della rete.
+- Errori sulla mappa: U-matrix media 3,66 per le predizioni errate e 3,76 per quelle corrette, quindi gli
+  errori **non** si concentrano sui confini della U-matrix; cadono invece in neuroni un po' meno puri
+  (purezza 0,65 contro 0,71).
+- Foto rinascimentali del test: 55 in regioni barocche, 32 gotiche, 13 romaniche. La rete non ha costruito una
+  regione propria per il Rinascimento: la sua rappresentazione è interna a quella barocca. È la conferma, nello
+  spazio delle caratteristiche, del limite già osservato: servono più dati, non soglie diverse.
+- Chiese simili (5 vicini per similarità del coseno, tra training e validation): precisione@5 sullo stile 0,577;
+  Gotico 0,734, Romanico 0,530, Barocco 0,545, Rinascimentale 0,132 (circa 6 volte la quota di immagini
+  rinascimentali nell'archivio, intorno al 2%). Nell'app i vicini vanno presentati come «edifici che la rete
+  considera simili», non come esempi garantiti dello stesso stile.
+
+## D14 – Esperimento ad alta risoluzione (notebook 01b e 03d)
+Il notebook 04 mostra che la rete non ha una rappresentazione propria del Rinascimento. Gli autori di
+WikiChurches riportano che passare da 224 a 448 px è l'intervento più efficace (+4,2 punti di balanced
+accuracy, forte miglioramento proprio sul Rinascimentale), perché i dettagli che separano Rinascimento e
+Barocco (capitelli, cornici, timpani) a 224 px occupano pochi pixel.
+
+Configurazione: immagini a 512 px sul lato corto, ritaglio 448 × 448 (stesso rapporto 0,875 di 224/256),
+batch 16 per la memoria della GPU; per il resto identica a M3 (pesi iniziali di M1, blocchi 4-5, learning rate
+1·10⁻⁵, stessi dati, sovra-campionamento e augmentation). I pesi della VGG-16 non dipendono dalla dimensione
+dell'immagine grazie al Global Average Pooling, quindi M1 si riusa senza modifiche.
+
+Regole fissate prima: due addestramenti a 448 px (semi 42 e 43) contro i due a 224 px già disponibili
+(M3 del 03b e controllo del 03c), tutti con TTA; il 448 si accetta se la media della macro-F1 di validation
+migliora di almeno 0,03 (circa una deviazione standard tra addestramenti); il test si usa una sola volta, dopo
+la decisione. Tempo massimo: una sessione. È l'ultimo intervento sul modello; dopo, il modello si congela.

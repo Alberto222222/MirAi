@@ -21,7 +21,8 @@ Foto ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──► softmax
 | 4. Modello M2 | fine-tuning del blocco 5 + analisi degli errori | ✅ |
 | 4b. Miglioramenti | M3 (VGG-16 blocchi 4-5), ConvNeXt-Tiny, scelta del modello finale | ✅ |
 | 4c. Dati esterni | MonuMAI nel training per il Rinascimentale: esperimento respinto sul validation | ✅ |
-| 4d. Mappa di Kohonen | SOM sulle 512 caratteristiche del modello finale, chiese simili | ⏳ |
+| 4d. Mappa di Kohonen | SOM sulle 512 caratteristiche del modello finale, chiese simili | ✅ |
+| 4e. Alta risoluzione | M3 con immagini 448 × 448 (due addestramenti), confronto con 224 | ⏳ |
 | 5. Valutazione | accuracy, P/R/F1 per classe, matrice di confusione, McNemar | ☐ |
 | 6. Explainable AI | Grad-CAM, LIME, deletion test | ☐ |
 | 7. App | Gradio: stile + heatmap + descrizione di stile, elementi e monumento | ☐ |
@@ -72,7 +73,10 @@ Le immagini **non** stanno su GitHub: sono su Google Drive
 4. `notebooks/03_finetuning_errori.ipynb` (GPU): fine-tuning (M2) e analisi degli errori.
 5. `notebooks/03b_miglioramenti.ipynb` (GPU): M3, ConvNeXt-Tiny e scelta del modello finale.
 6. `notebooks/03c_dati_esterni.ipynb` (GPU): M3 con immagini MonuMAI aggiunte al training.
-7. `notebooks/04_som.ipynb` (GPU): mappa di Kohonen dello spazio degli stili e chiese simili.
+7. `notebooks/01b_alta_risoluzione.ipynb` (CPU): immagini a 512 px sul lato corto.
+8. `notebooks/03d_alta_risoluzione.ipynb` (GPU): M3 a 448 × 448 e decisione sul modello finale.
+9. `notebooks/04_som.ipynb` (GPU): mappa di Kohonen dello spazio degli stili e chiese simili
+   (usa la risoluzione indicata in `reports/metrics/modello_finale.json`).
 
 Ogni notebook si esegue dall'alto in basso.
 

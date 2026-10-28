@@ -513,11 +513,12 @@ def extract_resize(index_csv: str | Path, zip_path: str | Path, out_dir: str | P
     return df
 
 
-def save_to_drive(processed_dir: str | Path, drive_dir: str | Path) -> Path:
+def save_to_drive(processed_dir: str | Path, drive_dir: str | Path,
+                  tar_name: str = config.PROCESSED_TAR_NAME) -> Path:
     """Impacchetta le immagini in un solo .tar su Drive (molti file piccoli su Drive sono lenti)."""
     drive = Path(drive_dir)
     drive.mkdir(parents=True, exist_ok=True)
-    tar_path = drive / config.PROCESSED_TAR_NAME
+    tar_path = drive / tar_name
     src = Path(processed_dir)
     with tarfile.open(tar_path, "w") as tar:
         tar.add(src, arcname=src.name)
@@ -526,15 +527,19 @@ def save_to_drive(processed_dir: str | Path, drive_dir: str | Path) -> Path:
 
 
 def restore_from_drive(drive_dir: str | Path = config.DRIVE_DATA_DIR,
-                       dest: str | Path = "/content") -> Path:
-    """Da usare nei notebook successivi: ripristina /content/processed in pochi secondi."""
-    tar_path = Path(drive_dir) / config.PROCESSED_TAR_NAME
+                       dest: str | Path = "/content",
+                       tar_name: str = config.PROCESSED_TAR_NAME) -> Path:
+    """Da usare nei notebook successivi: ripristina /content/processed in pochi secondi
+    (con tar_name = PROCESSED_TAR_NAME_HR ripristina /content/processed512)."""
+    tar_path = Path(drive_dir) / tar_name
+    with tarfile.open(tar_path) as tar:
+        top = tar.next().name.split("/")[0]      # cartella principale dell'archivio
     with tarfile.open(tar_path) as tar:
         try:
             tar.extractall(dest, filter="data")
         except TypeError:  # Python vecchio senza il parametro filter
             tar.extractall(dest)
-    out = Path(dest) / "processed"
+    out = Path(dest) / top
     print("Immagini ripristinate in", out)
     return out
 

@@ -52,6 +52,15 @@ def build_vgg16_head(size: int = config.IMG_SIZE, num_classes: int = NUM_CLASSES
     return keras.Model(base.input, out, name="vgg16_m1")
 
 
+def vgg16_at_size(model: keras.Model, size: int) -> keras.Model:
+    """Stessa rete VGG-16 con testa, ma con ingresso size x size: gli strati convoluzionali e la
+    testa (dopo il Global Average Pooling) non dipendono dalla dimensione dell'immagine,
+    quindi i pesi si copiano senza modifiche."""
+    new = build_vgg16_head(size=size)
+    new.set_weights(model.get_weights())
+    return new
+
+
 def load(path) -> keras.Model:
     """Carica un modello salvato in formato .keras."""
     return keras.models.load_model(str(path))
