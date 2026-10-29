@@ -1,0 +1,5 @@
+modello,accuracy,macro-F1,balanced accuracy,top-2,F1 Romanico,F1 Gotico,F1 Rinascimentale,F1 Barocco,F1 Classico antico,F1 Neoclassico
+clip+dinov2 | MLP | WikiChurches,0.777,0.724,0.712,0.9189736664415935,0.801,0.811,0.492,0.792,,
+clip+dinov2 | MLP | Wikidata,0.68,0.692,0.707,0.8632619439868204,0.737,0.592,0.675,0.6,0.853,0.697
+VGG-16 6 stili (03e) | WikiChurches,0.698,0.619,0.595,0.8696826468602296,0.739,0.755,0.274,0.71,,
+VGG-16 6 stili (03e) | Wikidata,0.56,0.564,0.585,0.7652388797364086,0.634,0.478,0.53,0.468,0.679,0.598

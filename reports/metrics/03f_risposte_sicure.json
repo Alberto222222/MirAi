@@ -1,0 +1,11 @@
+{
+ "soglia_stile": 0.8,
+ "accuratezza_stile_sicura": 0.88,
+ "copertura_stile": 0.5565862708719852,
+ "soglia_famiglia": 0.6,
+ "accuratezza_famiglia_sicura": 0.9072043852779953,
+ "copertura_famiglia": 0.9476808905380334,
+ "top2_stile": 0.8938775510204081,
+ "accuratezza_stile": 0.7332096474953618,
+ "accuratezza_famiglia": 0.889795918367347
+}

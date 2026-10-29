@@ -1,0 +1,16 @@
+{
+ "stile": {
+  "b": 88,
+  "c": 205,
+  "metodo": "chi-quadro con correzione",
+  "statistica": 45.924914675767916,
+  "p_value": 1.2287327976680319e-11
+ },
+ "famiglia": {
+  "b": 52,
+  "c": 77,
+  "metodo": "chi-quadro con correzione",
+  "statistica": 4.465116279069767,
+  "p_value": 0.034593735040723626
+ }
+}

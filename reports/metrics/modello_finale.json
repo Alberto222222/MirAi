@@ -1,14 +1,84 @@
 {
- "modello": "M3 448 seme 43 + TTA",
- "file": "/content/drive/MyDrive/mirai_data/models/vgg16_m3_448_s43.keras",
- "pesi": "/content/drive/MyDrive/mirai_data/models/vgg16_m3_448_s43.best.weights.h5",
- "preprocessing": "vgg",
- "tta": true,
- "img_size": 448,
- "img_short_side": 512,
- "tar": "wikichurches4_512.tar",
- "batch_size": 16,
- "macro_f1_val": 0.6900838817278938,
- "macro_f1_test": 0.6304055175995636,
- "accuracy_test": 0.6975016880486158
+ "modello": "clip+dinov2 | MLP",
+ "tipo": "transformer_congelato",
+ "classi": [
+  "Romanesque",
+  "Gothic",
+  "Renaissance",
+  "Baroque",
+  "Classical",
+  "Neoclassical"
+ ],
+ "famiglie": {
+  "Medievale": [
+   "Romanesque",
+   "Gothic"
+  ],
+  "Classicismo moderno": [
+   "Renaissance",
+   "Baroque",
+   "Neoclassical"
+  ],
+  "Classico antico": [
+   "Classical"
+  ]
+ },
+ "soglia_stile": 0.8,
+ "soglia_famiglia": 0.6,
+ "test": {
+  "famiglia": {
+   "clip+dinov2 | MLP | WikiChurches": {
+    "accuratezza famiglia": 0.912,
+    "macro-F1 famiglia": 0.9,
+    "recall Medievale": 0.924,
+    "recall Classicismo moderno": 0.888,
+    "recall Classico antico": NaN
+   },
+   "clip+dinov2 | MLP | Wikidata": {
+    "accuratezza famiglia": 0.862,
+    "macro-F1 famiglia": 0.857,
+    "recall Medievale": 0.749,
+    "recall Classicismo moderno": 0.927,
+    "recall Classico antico": 0.944
+   },
+   "VGG-16 6 stili (03e) | WikiChurches": {
+    "accuratezza famiglia": 0.895,
+    "macro-F1 famiglia": 0.879,
+    "recall Medievale": 0.94,
+    "recall Classicismo moderno": 0.801,
+    "recall Classico antico": NaN
+   },
+   "VGG-16 6 stili (03e) | Wikidata": {
+    "accuratezza famiglia": 0.815,
+    "macro-F1 famiglia": 0.772,
+    "recall Medievale": 0.736,
+    "recall Classicismo moderno": 0.874,
+    "recall Classico antico": 0.775
+   }
+  },
+  "stile_accuracy": 0.7332096474953618,
+  "famiglia_accuracy": 0.889795918367347,
+  "top2": 0.8938775510204081
+ },
+ "benchmark_chiese_4_stili": {
+  "modello": "M3 448 seme 43 + TTA",
+  "file": "/content/drive/MyDrive/mirai_data/models/vgg16_m3_448_s43.keras",
+  "pesi": "/content/drive/MyDrive/mirai_data/models/vgg16_m3_448_s43.best.weights.h5",
+  "preprocessing": "vgg",
+  "tta": true,
+  "img_size": 448,
+  "img_short_side": 512,
+  "tar": "wikichurches4_512.tar",
+  "batch_size": 16,
+  "macro_f1_val": 0.6900838817278938,
+  "macro_f1_test": 0.6304055175995636,
+  "accuracy_test": 0.6975016880486158
+ },
+ "rete": "clip+dinov2",
+ "backbone": [
+  "openai/clip-vit-large-patch14",
+  "facebook/dinov2-large"
+ ],
+ "file": "/content/drive/MyDrive/mirai_data/models/testa_03f.pt",
+ "features": "/content/drive/MyDrive/mirai_data/features_finale.npz"
 }

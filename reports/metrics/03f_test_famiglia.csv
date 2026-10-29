@@ -1,0 +1,5 @@
+modello,accuratezza famiglia,macro-F1 famiglia,recall Medievale,recall Classicismo moderno,recall Classico antico
+clip+dinov2 | MLP | WikiChurches,0.912,0.9,0.924,0.888,
+clip+dinov2 | MLP | Wikidata,0.862,0.857,0.749,0.927,0.944
+VGG-16 6 stili (03e) | WikiChurches,0.895,0.879,0.94,0.801,
+VGG-16 6 stili (03e) | Wikidata,0.815,0.772,0.736,0.874,0.775

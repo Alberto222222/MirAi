@@ -1,0 +1,6 @@
+condizione,accuratezza stile,accuratezza famiglia
+normale,0.732,0.89
+sera (più scura),0.725,0.89
+sole forte (più chiara),0.726,0.886
+tramonto (luce calda),0.726,0.891
+cielo coperto (basso contrasto),0.725,0.887
