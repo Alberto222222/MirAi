@@ -25,7 +25,10 @@ from PIL import Image, ImageOps
 
 from src import config
 
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"   # estrazione delle caratteristiche
+# Le teste si addestrano su CPU: nello stesso processo TensorFlow (VGG-16) occupa la GPU e usare di nuovo
+# PyTorch su GPU dopo TensorFlow può far arrestare la sessione. Le teste sono piccole: su CPU bastano pochi secondi.
+HEAD_DEVICE = "cpu"
 
 
 # ---------------------------------------------------------------------------
@@ -109,14 +112,14 @@ class Standardizer:
 def _cw(y: np.ndarray, k: int) -> torch.Tensor:
     n = np.bincount(y, minlength=k).astype(np.float32)
     w = n.sum() / (k * np.maximum(n, 1))
-    return torch.tensor(w, device=DEVICE)
+    return torch.tensor(w, device=HEAD_DEVICE)
 
 
 def fit_linear(X: np.ndarray, y: np.ndarray, l2: float, k: int, iters: int = 300) -> torch.nn.Linear:
     torch.manual_seed(config.SEED)
-    Xt = torch.tensor(X, dtype=torch.float32, device=DEVICE)
-    yt = torch.tensor(y, dtype=torch.long, device=DEVICE)
-    lin = torch.nn.Linear(X.shape[1], k).to(DEVICE)
+    Xt = torch.tensor(X, dtype=torch.float32, device=HEAD_DEVICE)
+    yt = torch.tensor(y, dtype=torch.long, device=HEAD_DEVICE)
+    lin = torch.nn.Linear(X.shape[1], k).to(HEAD_DEVICE)
     loss_fn = torch.nn.CrossEntropyLoss(weight=_cw(y, k))
     opt = torch.optim.LBFGS(lin.parameters(), lr=1.0, max_iter=iters, line_search_fn="strong_wolfe")
 
@@ -135,10 +138,10 @@ def fit_mlp(X: np.ndarray, y: np.ndarray, groups: np.ndarray, k: int, p=config.F
     tr, ho = next(GroupShuffleSplit(1, test_size=0.1, random_state=config.SEED).split(X, y, groups))
     torch.manual_seed(config.SEED)
     net = torch.nn.Sequential(torch.nn.Linear(X.shape[1], p["hidden"]), torch.nn.ReLU(),
-                              torch.nn.Dropout(p["dropout"]), torch.nn.Linear(p["hidden"], k)).to(DEVICE)
+                              torch.nn.Dropout(p["dropout"]), torch.nn.Linear(p["hidden"], k)).to(HEAD_DEVICE)
     opt = torch.optim.Adam(net.parameters(), lr=p["lr"], weight_decay=p["l2"])
     loss_fn = torch.nn.CrossEntropyLoss(weight=_cw(y[tr], k))
-    f32, i64 = dict(dtype=torch.float32, device=DEVICE), dict(dtype=torch.long, device=DEVICE)
+    f32, i64 = dict(dtype=torch.float32, device=HEAD_DEVICE), dict(dtype=torch.long, device=HEAD_DEVICE)
     Xtr, ytr = torch.tensor(X[tr], **f32), torch.tensor(y[tr], **i64)
     Xho, yho = torch.tensor(X[ho], **f32), torch.tensor(y[ho], **i64)
     best, best_state, wait, storia = 1e9, None, 0, []
@@ -146,7 +149,7 @@ def fit_mlp(X: np.ndarray, y: np.ndarray, groups: np.ndarray, k: int, p=config.F
     for ep in range(p["epochs"]):
         net.train()
         for idx in torch.randperm(len(Xtr), generator=g).split(256):
-            idx = idx.to(DEVICE)
+            idx = idx.to(HEAD_DEVICE)
             opt.zero_grad()
             loss_fn(net(Xtr[idx]), ytr[idx]).backward()
             opt.step()
@@ -168,7 +171,7 @@ def fit_mlp(X: np.ndarray, y: np.ndarray, groups: np.ndarray, k: int, p=config.F
 
 @torch.no_grad()
 def predict_proba(head, X: np.ndarray) -> np.ndarray:
-    return torch.softmax(head(torch.tensor(X, dtype=torch.float32, device=DEVICE)), dim=1).cpu().numpy()
+    return torch.softmax(head(torch.tensor(X, dtype=torch.float32, device=HEAD_DEVICE)), dim=1).cpu().numpy()
 
 
 def save_head(path, head, std: Standardizer, meta: dict) -> None:
