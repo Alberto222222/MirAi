@@ -1,0 +1,9 @@
+{
+ "punteggio": "distanza dai 5 vicini",
+ "soglia": 0.575,
+ "k": 5,
+ "AUROC selezione (met\u00e0 A)": 0.971,
+ "AUROC finale (test vs met\u00e0 B)": 0.962,
+ "foto vere respinte (test)": 0.046,
+ "fuori dominio respinte (met\u00e0 B)": 0.749
+}

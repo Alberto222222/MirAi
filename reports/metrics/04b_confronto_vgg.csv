@@ -1,0 +1,3 @@
+spazio,purezza famiglia (train),SOM famiglia – WikiChurches,SOM famiglia – Wikidata,SOM stile – WikiChurches,SOM stile – Wikidata
+VGG-16 6 stili,0.862,0.837,0.761,0.601,0.451
+CLIP + DINOv2,0.888,0.847,0.803,0.623,0.546

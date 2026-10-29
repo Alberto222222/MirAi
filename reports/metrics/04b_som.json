@@ -1,0 +1,75 @@
+{
+ "griglia": "20x20",
+ "pca_componenti": 256,
+ "varianza_spiegata": 0.7909037470817566,
+ "iterazioni": 217760,
+ "secondi": 134.4,
+ "QE_iniziale": 44.2267548310164,
+ "QE_train": 34.04710373342566,
+ "QE_test": 33.636922036995,
+ "TE_train": 0.03646216017634093,
+ "TE_test": 0.043042671614100185,
+ "purezza": {
+  "famiglia": 0.8795922116091109,
+  "stile": 0.7029757531227039
+ },
+ "neuroni_per_stile": {
+  "Romanico": 93,
+  "Gotico": 142,
+  "Rinascimentale": 34,
+  "Barocco": 81,
+  "Classico antico": 13,
+  "Neoclassico": 32
+ },
+ "som_vs_rete": {
+  "WikiChurches": {
+   "SOM famiglia": 0.859,
+   "rete famiglia": 0.912,
+   "SOM stile": 0.638,
+   "rete stile": 0.777
+  },
+  "Wikidata": {
+   "SOM famiglia": 0.835,
+   "rete famiglia": 0.862,
+   "SOM stile": 0.572,
+   "rete stile": 0.68
+  }
+ },
+ "vicini": {
+  "caratteristiche grezze | WikiChurches": {
+   "famiglia@5": 0.8571235651586766,
+   "stile@5": 0.6610398379473329
+  },
+  "caratteristiche grezze | Wikidata": {
+   "famiglia@5": 0.8105436573311368,
+   "stile@5": 0.5645799011532125
+  },
+  "spazio della testa | WikiChurches": {
+   "famiglia@5": 0.8837272113436867,
+   "stile@5": 0.7106009453072248
+  },
+  "spazio della testa | Wikidata": {
+   "famiglia@5": 0.8400329489291598,
+   "stile@5": 0.628995057660626
+  }
+ },
+ "spazio_vicini_app": "spazio della testa",
+ "classi_problematiche": {
+  "Chiese rinascimentali (test)": {
+   "Barocco": 51,
+   "Gotico": 22,
+   "Rinascimentale": 12,
+   "Romanico": 11,
+   "Neoclassico": 3,
+   "Classico antico": 1
+  },
+  "Edifici gotici, monumenti (test)": {
+   "Gotico": 101,
+   "Romanico": 72,
+   "Rinascimentale": 26,
+   "Barocco": 19,
+   "Neoclassico": 4,
+   "Classico antico": 3
+  }
+ }
+}
