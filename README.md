@@ -24,7 +24,7 @@ Foto 448×448 ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──�
 | 4d. Mappa di Kohonen | SOM sulle 512 caratteristiche del modello finale, chiese simili | ✅ |
 | 4e. Alta risoluzione | M3 con immagini 448 × 448: nuovo modello finale | ✅ |
 | 4f. Sei stili | monumenti di ogni tipo da Wikidata (+ Classico antico, Neoclassico), elementi MonuMAI | ✅ |
-| 4g. Transformer e gerarchia | CLIP / DINOv2 congelati, risposta famiglia → stile, confronto con VGG-16 | ⏳ |
+| 4g. Transformer e gerarchia | CLIP + DINOv2 congelati, risposta famiglia → stile: **modello definitivo** | ✅ |
 | 5. Valutazione | accuracy, P/R/F1 per classe, matrice di confusione, McNemar | ☐ |
 | 6. Explainable AI | Grad-CAM, LIME, deletion test | ☐ |
 | 7. App | Gradio: stile + heatmap + descrizione di stile, elementi e monumento | ☐ |
@@ -40,6 +40,13 @@ Foto 448×448 ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──�
 | M3 VGG-16 fine-tuning blocchi 4-5 + TTA (224 px) | 0,677 | 0,588 | 0,577 |
 | **M3 a 448 px + TTA (finale)** | **0,698** | **0,630** | **0,617** |
 | ConvNeXt-Tiny | 0,631 | 0,536 | 0,535 |
+
+**Modello definitivo (6 stili, risposta gerarchica, CLIP + DINOv2 congelati):**
+
+| Test | Famiglia | Stile: accuracy | Stile: macro-F1 |
+|---|---|---|---|
+| Chiese (WikiChurches, 1.481) | 0,912 | 0,777 | 0,724 |
+| Monumenti (Wikidata, 1.214) | 0,862 | 0,680 | 0,692 |
 
 Dettagli, matrici di confusione e test statistici in `docs/decisioni.md` e `reports/`.
 

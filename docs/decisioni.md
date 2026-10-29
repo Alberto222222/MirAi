@@ -482,3 +482,38 @@ Cambiamenti:
 Regole fissate prima: stessi dati e split del 03e; scelta della configurazione (rete, testa, L2) sul validation con
 criterio = media della macro-F1 sullo stile tra validation WikiChurches (4 stili) e Wikidata (6 stili), VGG-16 inclusa;
 test usato una sola volta; soglie delle risposte sicure scelte sul validation (stile ≥ 85%, famiglia ≥ 90%).
+
+**Risultati del notebook 03f.** Estrazione: CLIP 768 valori (4,5 min), DINOv2 2.048 valori (4,1 min) su GPU L4.
+Training 10.888 immagini (WikiChurches + Wikidata + ritagli MonuMAI), validation 1.082 + 1.214, test 1.481 + 1.214.
+
+Scelta sul validation (18 configurazioni + VGG-16): **CLIP+DINOv2 con testa MLP**, criterio 0,712 (VGG-16: 0,593).
+Le prime cinque configurazioni sono entro 0,02: la scelta non dipende da un singolo valore fortunato.
+
+Test (una sola volta):
+
+| | Famiglia: accuratezza | Stile: accuracy | Stile: macro-F1 | Top-2 |
+|---|---|---|---|---|
+| Chiese – CLIP+DINOv2 | **0,912** | **0,777** | **0,724** | 0,919 |
+| Chiese – VGG-16 6 stili | 0,895 | 0,698 | 0,619 | 0,870 |
+| Monumenti – CLIP+DINOv2 | **0,862** | **0,680** | **0,692** | 0,863 |
+| Monumenti – VGG-16 6 stili | 0,815 | 0,560 | 0,564 | 0,765 |
+
+McNemar VGG-16 vs CLIP+DINOv2: chiese, stile b = 88, c = 205, p ≈ 1·10⁻¹¹; famiglia p ≈ 0,035. Monumenti, stile
+b = 83, c = 229, p ≈ 2·10⁻¹⁶; famiglia p ≈ 2·10⁻⁵. Sul benchmark delle chiese (4 stili) il nuovo modello supera anche il
+migliore modello a 4 stili (accuracy 0,698 → 0,777, macro-F1 0,630 → 0,724).
+
+F1 per stile – chiese: Romanico 0,80 · Gotico 0,81 · Barocco 0,79 · **Rinascimentale 0,49** (35% classificato come
+Barocco). Monumenti: Classico antico 0,85 · Romanico 0,74 · Neoclassico 0,70 · Rinascimentale 0,68 · Barocco 0,60 ·
+**Gotico 0,59** (23% degli edifici gotici non religiosi classificati come rinascimentali: è la principale causa della
+recall più bassa della famiglia Medievale sui monumenti, 0,75).
+
+Affidabilità (2.695 foto di test): accuratezza della famiglia 0,89, dello stile 0,73, top-2 0,89. Risposte sicure con
+soglie scelte sul validation: stile (confidenza ≥ 0,80) corretto all'88% sul 56% delle foto; famiglia (≥ 0,60) corretta
+al 91% sul 95% delle foto. Luce simulata: calo massimo 0,007 (stile) e 0,004 (famiglia).
+
+Overfitting: backbone congelato, testa piccola con dropout ed early stopping su una parte del training separata per
+edificio; validation e test quasi identici (macro-F1 stile chiese 0,743 → 0,724, monumenti 0,682 → 0,692; famiglia
+0,905 → 0,912 e 0,860 → 0,862). Limite non verificabile: CLIP e DINOv2 sono stati pre-addestrati su immagini dal web,
+che potrebbero includere foto di Wikimedia Commons (senza le etichette di stile).
+
+**Modello definitivo dell'applicazione: CLIP ViT-L/14 + DINOv2 ViT-L/14 congelati, testa MLP, risposta gerarchica.**
