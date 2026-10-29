@@ -1,0 +1,75 @@
+{
+ "soglia_architettura": 0.7275728583335876,
+ "confronto_dataset": [
+  {
+   "coppia di dataset": "Wikidata – WikiChurches",
+   "foto confrontate": 10554,
+   "duplicati identici": 23,
+   "stesso soggetto (coseno ≥ 0,95)": 1
+  },
+  {
+   "coppia di dataset": "Wikidata – MonuMAI",
+   "foto confrontate": 10554,
+   "duplicati identici": 4,
+   "stesso soggetto (coseno ≥ 0,95)": 1
+  },
+  {
+   "coppia di dataset": "Wikidata – Wikidata",
+   "foto confrontate": 10554,
+   "duplicati identici": 47,
+   "stesso soggetto (coseno ≥ 0,95)": 2
+  },
+  {
+   "coppia di dataset": "MonuMAI – WikiChurches",
+   "foto confrontate": 1514,
+   "duplicati identici": 0,
+   "stesso soggetto (coseno ≥ 0,95)": 4
+  }
+ ],
+ "ritagli_elementi": {
+  "Gothic": 400,
+  "Baroque": 330,
+  "Renaissance": 137
+ },
+ "rimossi": {
+  "": 6498,
+  "non è un edificio": 2397,
+  "etichetta incoerente (training)": 1145,
+  "oltre il tetto per stile": 436,
+  "immagine piccola": 227,
+  "duplicato interno": 47,
+  "duplicato di WikiChurches": 23,
+  "proporzioni estreme": 5,
+  "duplicato di MonuMAI": 4,
+  "stesso soggetto (interno)": 2,
+  "stesso soggetto di MonuMAI": 1,
+  "stesso soggetto di WikiChurches": 1,
+  "download fallito": 1
+ },
+ "finale": {
+  "train": {
+   "Romanesque": 859,
+   "Gothic": 813,
+   "Renaissance": 725,
+   "Baroque": 845,
+   "Classical": 174,
+   "Neoclassical": 789
+  },
+  "val": {
+   "Romanesque": 225,
+   "Gothic": 225,
+   "Renaissance": 206,
+   "Baroque": 225,
+   "Classical": 57,
+   "Neoclassical": 208
+  },
+  "test": {
+   "Romanesque": 225,
+   "Gothic": 225,
+   "Renaissance": 206,
+   "Baroque": 225,
+   "Classical": 58,
+   "Neoclassical": 208
+  }
+ }
+}

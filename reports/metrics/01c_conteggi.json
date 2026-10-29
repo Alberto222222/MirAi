@@ -1,0 +1,36 @@
+{
+ "radici": {
+  "Romanesque": [
+   "Q46261"
+  ],
+  "Gothic": [
+   "Q176483"
+  ],
+  "Renaissance": [
+   "Q236122"
+  ],
+  "Baroque": [
+   "Q840829"
+  ],
+  "Classical": [
+   "Q223750",
+   "Q331273"
+  ],
+  "Neoclassical": [
+   "Q54111"
+  ]
+ },
+ "edifici_trovati": 60910,
+ "dopo_esclusione_wikichurches": 54894,
+ "in_europa_e_mediterraneo": 35582,
+ "ambigui_scartati": 2281,
+ "con_immagine_raster": 33256,
+ "per_stile": {
+  "Romanesque": 6288,
+  "Gothic": 6566,
+  "Renaissance": 3693,
+  "Baroque": 10645,
+  "Classical": 1037,
+  "Neoclassical": 5027
+ }
+}
