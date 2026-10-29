@@ -155,8 +155,10 @@ WD_MIN_PER_CLASS = 300        # sotto questa soglia lo stile non è utilizzabile
 WD_THUMB_WIDTH = 960          # larghezza della miniatura scaricata da Wikimedia Commons
 WD_MIN_SHORT_SIDE = 400       # immagini più piccole scartate
 WD_MAX_ASPECT = 2.5           # panorami e dettagli molto allungati scartati
-WD_ARCH_QUANTILE = 0.05       # filtro «è un edificio?»: soglia = 5° percentile sulle foto WikiChurches
-WD_LABEL_MIN_PROB = 0.05      # pulizia delle etichette del training (probabilità fuori fold minima)
+WD_ARCH_QUANTILE = 0.01       # filtro «è un edificio?»: soglia = 1° percentile sulle foto WikiChurches
+                              # (con il 5° si scartava il 22% delle foto, soprattutto rovine, palazzi e teatri)
+WD_LABEL_MIN_PROB = 0.02      # pulizia etichette (training): tolta solo se p(stile dichiarato) < 0,02
+WD_LABEL_OTHER_PROB = 0.60    # ... e un altro stile ha probabilità ≥ 0,60 (errore evidente, non caso difficile)
 WD_SPLIT = (0.70, 0.15, 0.15)
 WD_TAR_NAME = "wikidata6_512.tar"
 WD_SPLITS_CSV = "data/splits/splits6_wikidata.csv"

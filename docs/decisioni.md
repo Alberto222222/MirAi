@@ -412,12 +412,15 @@ non è la quantità ma coprire tipi di edificio e stili mancanti.
 2. immagini con lato corto < 400 px o proporzioni > 2,5 scartate;
 3. duplicati identici (hash percettivo ≤ 8 bit) rispetto a WikiChurches, MonuMAI e alle altre foto Wikidata;
 4. filtro «è un edificio?»: somma delle probabilità ImageNet delle classi architettoniche (VGG-16 originale) sotto il
-   5° percentile delle foto WikiChurches → scartata;
+   1° percentile delle foto WikiChurches → scartata (con il 5° percentile, prima esecuzione, si scartava il 22%
+   delle foto, soprattutto rovine antiche, teatri e palazzi: il punteggio ImageNet favorisce le chiese);
 5. stesso soggetto: foto diverse dello stesso edificio dalla stessa angolazione (similarità del coseno ≥ 0,95 tra le
    caratteristiche ImageNet) rispetto a WikiChurches, MonuMAI e alle altre foto Wikidata → scartate. Impedisce che un
    edificio di validation/test entri nel training sotto un altro codice Wikidata;
 6. solo training: regressione logistica sulle caratteristiche ImageNet con validazione incrociata a 5 fold; le foto con
-   probabilità fuori fold del proprio stile < 0,05 sono considerate etichettate male e tolte.
+   probabilità fuori fold del proprio stile < 0,02 **e** un altro stile ≥ 0,60 sono considerate etichettate male e
+   tolte. La prima versione (solo < 0,05) toglieva il 21% del training (1.145 foto su 5.350), soprattutto palazzi,
+   castelli e ville: con un classificatore lineare accurato al 43% la regola eliminava la varietà, non il rumore.
 I passi 1–5 valgono per tutti gli insiemi, il 6 solo per il training: validation e test non vengono «ripuliti» con un
 modello e restano una misura onesta. Split per edificio 70/15/15. Il notebook riporta, per ogni coppia di dataset, il
 numero di duplicati identici e di foto dello stesso soggetto.
