@@ -92,7 +92,8 @@ Le immagini **non** stanno su GitHub: sono su Google Drive
 9. `notebooks/01c_monumenti_wikidata.ipynb` (GPU): dataset di monumenti a 6 stili da Wikidata, con pulizia.
 10. `notebooks/03e_sei_stili.ipynb` (GPU): modello a 6 stili e decisione.
 11. `notebooks/03f_transformer_gerarchico.ipynb` (GPU): CLIP e DINOv2 congelati, risposta gerarchica.
-12. `notebooks/04_som.ipynb` (GPU): mappa di Kohonen dello spazio degli stili e chiese simili
+12. `notebooks/04b_som_modello_finale.ipynb` (GPU T4, quasi tutto CPU): SOM del modello definitivo, edifici simili, foto fuori dominio.
+13. `notebooks/04_som.ipynb` (GPU): mappa di Kohonen dello spazio degli stili e chiese simili
    (usa la risoluzione indicata in `reports/metrics/modello_finale.json`).
 
 Ogni notebook si esegue dall'alto in basso.

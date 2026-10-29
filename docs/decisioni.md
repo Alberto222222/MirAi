@@ -517,3 +517,12 @@ edificio; validation e test quasi identici (macro-F1 stile chiese 0,743 → 0,72
 che potrebbero includere foto di Wikimedia Commons (senza le etichette di stile).
 
 **Modello definitivo dell'applicazione: CLIP ViT-L/14 + DINOv2 ViT-L/14 congelati, testa MLP, risposta gerarchica.**
+
+## D18 – SOM del modello definitivo (notebook 04b)
+La SOM viene ripetuta sulle caratteristiche del modello definitivo (CLIP + DINOv2, 2.816 valori) per tre scopi:
+verificare in modo non supervisionato che le 3 famiglie corrispondano a regioni dello spazio appreso; mostrare dove
+cadono le classi problematiche (chiese rinascimentali, gotico civile); confrontare con lo stesso protocollo lo spazio
+della VGG-16 a 6 stili. Caratteristiche standardizzate e ridotte con PCA a 256 componenti (le distanze euclidee in
+2.816 dimensioni sono dominate dal rumore e l'addestramento online sarebbe lento); griglia 20 × 20 (≈ 5·√N neuroni
+per N ≈ 11.000). La stessa rappresentazione serve all'app per gli edifici simili e per il filtro delle foto fuori
+dominio (foto Ispano-musulmane di MonuMAI, soglia al 95° percentile del validation).

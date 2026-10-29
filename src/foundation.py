@@ -177,3 +177,19 @@ def predict_proba(head, X: np.ndarray) -> np.ndarray:
 def save_head(path, head, std: Standardizer, meta: dict) -> None:
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     torch.save({"state": head.state_dict(), "mu": std.mu, "sd": std.sd, "meta": meta}, path)
+
+
+def load_head(path):
+    """Ricarica la testa salvata da save_head: (rete PyTorch, standardizzazione, metadati)."""
+    ck = torch.load(path, map_location=HEAD_DEVICE, weights_only=False)
+    m = ck["meta"]
+    k = len(m["classi"])
+    if m.get("mlp"):
+        net = torch.nn.Sequential(torch.nn.Linear(m["dim"], m["hidden"]), torch.nn.ReLU(),
+                                  torch.nn.Dropout(m["dropout"]), torch.nn.Linear(m["hidden"], k))
+    else:
+        net = torch.nn.Linear(m["dim"], k)
+    net.load_state_dict(ck["state"])
+    std = Standardizer.__new__(Standardizer)
+    std.mu, std.sd = np.asarray(ck["mu"]), np.asarray(ck["sd"])
+    return net.to(HEAD_DEVICE).eval(), std, m
