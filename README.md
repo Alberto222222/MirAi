@@ -23,7 +23,8 @@ Foto 448×448 ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──�
 | 4c. Dati esterni | MonuMAI nel training per il Rinascimentale: esperimento respinto sul validation | ✅ |
 | 4d. Mappa di Kohonen | SOM sulle 512 caratteristiche del modello finale, chiese simili | ✅ |
 | 4e. Alta risoluzione | M3 con immagini 448 × 448: nuovo modello finale | ✅ |
-| 4f. Sei stili | monumenti di ogni tipo da Wikidata (+ Classico antico, Neoclassico), elementi MonuMAI | ⏳ |
+| 4f. Sei stili | monumenti di ogni tipo da Wikidata (+ Classico antico, Neoclassico), elementi MonuMAI | ✅ |
+| 4g. Transformer e gerarchia | CLIP / DINOv2 congelati, risposta famiglia → stile, confronto con VGG-16 | ⏳ |
 | 5. Valutazione | accuracy, P/R/F1 per classe, matrice di confusione, McNemar | ☐ |
 | 6. Explainable AI | Grad-CAM, LIME, deletion test | ☐ |
 | 7. App | Gradio: stile + heatmap + descrizione di stile, elementi e monumento | ☐ |
@@ -54,6 +55,8 @@ MirAi/
 │   ├── evaluation.py     metriche, matrici di confusione, curve, test di McNemar
 │   ├── analysis.py       analisi degli errori per sotto-stile, Paese e posizione
 │   ├── som.py            mappa auto-organizzante di Kohonen (NumPy)
+│   ├── foundation.py     CLIP / DINOv2 congelati: estrazione caratteristiche e teste
+│   ├── hierarchy.py      risposta gerarchica famiglia → stile e relative metriche
 │   ├── colab_git.py      commit e push da Colab senza esporre il token
 │   └── data/
 │       ├── wikichurches.py   download, indice, ridimensionamento, split, report
@@ -81,7 +84,8 @@ Le immagini **non** stanno su GitHub: sono su Google Drive
 8. `notebooks/03d_alta_risoluzione.ipynb` (GPU): M3 a 448 × 448 e decisione sul modello finale.
 9. `notebooks/01c_monumenti_wikidata.ipynb` (GPU): dataset di monumenti a 6 stili da Wikidata, con pulizia.
 10. `notebooks/03e_sei_stili.ipynb` (GPU): modello a 6 stili e decisione.
-11. `notebooks/04_som.ipynb` (GPU): mappa di Kohonen dello spazio degli stili e chiese simili
+11. `notebooks/03f_transformer_gerarchico.ipynb` (GPU): CLIP e DINOv2 congelati, risposta gerarchica.
+12. `notebooks/04_som.ipynb` (GPU): mappa di Kohonen dello spazio degli stili e chiese simili
    (usa la risoluzione indicata in `reports/metrics/modello_finale.json`).
 
 Ogni notebook si esegue dall'alto in basso.

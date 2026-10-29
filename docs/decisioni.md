@@ -448,3 +448,37 @@ validation (la più bassa con accuratezza ≥ 85%) e relativa copertura; robuste
 cielo coperto). L'85–90% come accuratezza su tutte le foto non è un obiettivo realistico: solo l'86% delle etichette di
 WikiChurches è del tutto corretto secondo la verifica di un esperto, e molti edifici sono di transizione tra due stili.
 L'app risponde quindi con sicurezza sopra la soglia e in modo graduato sotto.
+
+**Risultati del notebook 03e** (VGG-16 a 448 px, 6 stili, variante «base» per il test).
+
+| Test | 4 stili | 6 stili | McNemar |
+|---|---|---|---|
+| Chiese WikiChurches (1.481) | acc. 0,698 · macro-F1 0,630 | acc. 0,698 · macro-F1 0,619 | b = c = 109, p = 0,95 |
+| Monumenti Wikidata, 4 stili originali | acc. 0,489 · macro-F1 0,456 | acc. 0,507 · macro-F1 0,553 | p = 0,35 |
+| Monumenti Wikidata, 6 stili | – | acc. 0,560 · macro-F1 0,564 | |
+
+Validation: criterio (a) non soddisfatto (perdita di 0,08 di macro-F1 sulle chiese), (b) soddisfatto → **respinto**
+secondo la regola. Lettura: un modello addestrato solo su chiese non generalizza agli altri edifici (0,49 di accuracy);
+il Classico antico è riconosciuto (recall 0,81); sulle chiese il Rinascimentale viene confuso anche con il Neoclassico.
+Robustezza alla luce: calo massimo di 0,014 di accuracy. Top-2: 0,82.
+
+## D17 – Cambio strutturale: rete Transformer congelata e risposta gerarchica (notebook 03f)
+Dalle matrici di confusione del 03e quasi tutti gli errori cadono tra stili della stessa famiglia: raggruppando gli
+stili in Medievale (Romanico, Gotico), Classicismo moderno (Rinascimentale, Barocco, Neoclassico) e Classico antico,
+l'accuratezza della famiglia sul test è circa 0,81 sui monumenti e 0,89 sulle chiese, con lo stesso modello. Le
+famiglie sono motivate dalla storia dell'architettura (linguaggio medievale contro ordini classici), non dai dati;
+poiché il dato è emerso guardando il test, nel 03f vengono verificate prima sul validation.
+
+Cambiamenti:
+- **risposta gerarchica**: probabilità della famiglia = somma delle probabilità dei suoi stili; si sceglie la
+  famiglia, poi lo stile al suo interno. Metrica principale: accuratezza della famiglia; lo stile resta come secondo
+  livello, con le confusioni dentro il Classicismo moderno discusse come limite;
+- **reti moderne congelate**: CLIP ViT-L/14 (immagine-testo, 400 M di coppie) e DINOv2 ViT-L/14 (auto-supervisionato,
+  142 M di immagini), entrambe Vision Transformer. Si estraggono le caratteristiche una volta e si addestra solo una
+  testa (softmax lineare con L2, oppure MLP con dropout ed early stopping su un 10% del training separato per
+  edificio): pochi parametri, basso rischio di overfitting;
+- la VGG-16 a 6 stili resta come confronto sugli stessi dati e sullo stesso test (McNemar).
+
+Regole fissate prima: stessi dati e split del 03e; scelta della configurazione (rete, testa, L2) sul validation con
+criterio = media della macro-F1 sullo stile tra validation WikiChurches (4 stili) e Wikidata (6 stili), VGG-16 inclusa;
+test usato una sola volta; soglie delle risposte sicure scelte sul validation (stile ≥ 85%, famiglia ≥ 90%).

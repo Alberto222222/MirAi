@@ -189,6 +189,19 @@ S6_AUGMENT = "light"          # augmentation forte + variazioni di luce del gior
 # stili, e sulle foto Wikidata dei 4 stili originali non va peggio.
 S6_MAX_LOSS = 0.03
 
+# Notebook 03f – reti moderne pre-addestrate (Transformer) e risposta gerarchica
+BACKBONES = {"clip": "openai/clip-vit-large-patch14", "dinov2": "facebook/dinov2-large"}
+FOUND_L2 = (1e-4, 3e-4, 1e-3, 3e-3, 1e-2)      # regolarizzazione L2 della testa lineare (scelta sul validation)
+FOUND_MLP = {"hidden": 512, "dropout": 0.5, "lr": 1e-3, "epochs": 60, "patience": 8, "l2": 1e-4}
+# Famiglie storico-architettoniche (livello 1 della risposta gerarchica)
+FAMIGLIE = {
+    "Medievale": ["Romanesque", "Gothic"],
+    "Classicismo moderno": ["Renaissance", "Baroque", "Neoclassical"],
+    "Classico antico": ["Classical"],
+}
+SICURA_STILE = 0.85           # accuratezza minima (validation) per le risposte sicure sullo stile
+SICURA_FAMIGLIA = 0.90        # ... e sulla famiglia
+
 # Early stopping sulla loss di validazione (valore predefinito)
 PATIENCE = 4
 
