@@ -85,7 +85,9 @@ def extract(name: str, model, proc, paths, flip: bool = False, view: str | None 
     for x in dl:
         x = x.to(DEVICE, dtype=torch.float16)
         if name == "clip":
-            f = model.get_image_features(pixel_values=x)
+            # embedding dell'immagine = proiezione del token CLS dell'encoder visivo (indipendente dalla versione
+            # di transformers, in cui get_image_features può restituire un oggetto invece di un tensore)
+            f = model.visual_projection(model.vision_model(pixel_values=x).pooler_output)
         else:
             h = model(pixel_values=x).last_hidden_state
             f = torch.cat([h[:, 0], h[:, 1:].mean(1)], dim=1)
