@@ -1,0 +1,25 @@
+{
+ "macro_f1_val": {
+  "4 stili | WikiChurches, 4 stili originali": 0.6900838817278938,
+  "6 stili base | WikiChurches, 4 stili originali": 0.6092576284112814,
+  "6 stili elementi | WikiChurches, 4 stili originali": 0.6235234436253937,
+  "4 stili | Wikidata, 4 stili originali": 0.47088429958885064,
+  "6 stili base | Wikidata, 4 stili originali": 0.5700886531768884,
+  "6 stili base | Wikidata, 6 stili": 0.5775919122031891,
+  "6 stili elementi | Wikidata, 4 stili originali": 0.5804028790018056,
+  "6 stili elementi | Wikidata, 6 stili": 0.5835922970322506
+ },
+ "esito": {
+  "base": {
+   "chiese": false,
+   "monumenti": true,
+   "macro_f1_wikidata_6": 0.5775919122031891
+  },
+  "elementi": {
+   "chiese": false,
+   "monumenti": true,
+   "macro_f1_wikidata_6": 0.5835922970322506
+  }
+ },
+ "scelta": null
+}

@@ -1,0 +1,6 @@
+condizione,accuracy,macro-F1
+normale,0.634,0.612
+sera (più scura),0.62,0.599
+sole forte (più chiara),0.625,0.594
+tramonto (luce calda),0.629,0.604
+cielo coperto (basso contrasto),0.62,0.59

@@ -1,0 +1,9 @@
+modello,accuracy,macro-F1,balanced accuracy,F1 Romanico,F1 Gotico,F1 Rinascimentale,F1 Barocco,F1 Classico antico,F1 Neoclassico
+"4 stili | WikiChurches, 4 stili originali",0.735,0.69,0.674,0.681,0.793,0.577,0.71,,
+"6 stili base | WikiChurches, 4 stili originali",0.712,0.609,0.577,0.703,0.808,0.241,0.685,,
+"6 stili elementi | WikiChurches, 4 stili originali",0.707,0.624,0.614,0.69,0.794,0.321,0.688,,
+"4 stili | Wikidata, 4 stili originali",0.512,0.471,0.512,0.607,0.479,0.186,0.612,,
+"6 stili base | Wikidata, 4 stili originali",0.518,0.57,0.518,0.652,0.566,0.528,0.535,,
+"6 stili base | Wikidata, 6 stili",0.571,0.578,0.597,0.629,0.552,0.5,0.509,0.676,0.6
+"6 stili elementi | Wikidata, 4 stili originali",0.556,0.58,0.556,0.659,0.497,0.576,0.589,,
+"6 stili elementi | Wikidata, 6 stili",0.571,0.584,0.596,0.635,0.491,0.523,0.534,0.716,0.602

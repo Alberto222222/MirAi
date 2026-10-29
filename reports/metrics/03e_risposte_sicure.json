@@ -1,0 +1,6 @@
+{
+ "top2_accuracy": 0.822634508348794,
+ "soglia_sicura": 0.85,
+ "accuratezza_sicura_test": 0.8435233160621761,
+ "copertura_sicura_test": 0.3580705009276438
+}
