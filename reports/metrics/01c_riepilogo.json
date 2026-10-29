@@ -1,5 +1,5 @@
 {
- "soglia_architettura": 0.7275728583335876,
+ "soglia_architettura": 0.3657134473323822,
  "confronto_dataset": [
   {
    "coppia di dataset": "Wikidata – WikiChurches",
@@ -32,10 +32,10 @@
   "Renaissance": 137
  },
  "rimossi": {
-  "": 6498,
-  "non è un edificio": 2397,
-  "etichetta incoerente (training)": 1145,
-  "oltre il tetto per stile": 436,
+  "": 7487,
+  "oltre il tetto per stile": 1363,
+  "non è un edificio": 1023,
+  "etichetta incoerente (training)": 603,
   "immagine piccola": 227,
   "duplicato interno": 47,
   "duplicato di WikiChurches": 23,
@@ -48,28 +48,28 @@
  },
  "finale": {
   "train": {
-   "Romanesque": 859,
-   "Gothic": 813,
-   "Renaissance": 725,
-   "Baroque": 845,
-   "Classical": 174,
-   "Neoclassical": 789
+   "Romanesque": 949,
+   "Gothic": 941,
+   "Renaissance": 935,
+   "Baroque": 939,
+   "Classical": 347,
+   "Neoclassical": 948
   },
   "val": {
    "Romanesque": 225,
    "Gothic": 225,
-   "Renaissance": 206,
+   "Renaissance": 226,
    "Baroque": 225,
-   "Classical": 57,
-   "Neoclassical": 208
+   "Classical": 88,
+   "Neoclassical": 225
   },
   "test": {
    "Romanesque": 225,
    "Gothic": 225,
-   "Renaissance": 206,
+   "Renaissance": 225,
    "Baroque": 225,
-   "Classical": 58,
-   "Neoclassical": 208
+   "Classical": 89,
+   "Neoclassical": 225
   }
  }
 }
