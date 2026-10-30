@@ -600,3 +600,28 @@ Correzioni al notebook 05 senza riaddestrare il modello di stile; LIME non cambi
   notebook 03f). Le metriche ufficiali restano quelle di D17; quelle senza le immagini segnalate sono riportate a parte.
 - **Galleria:** per ogni stile la foto classificata correttamente con la confidenza più alta; casi problematici senza
   duplicati; un'immagine non fotografica come caso a sé.
+
+**Risultati del notebook 05b.**
+- Disegni e incisioni (probabilità CLIP ≥ 0,5): 18 immagini su 2.695 nel test, 63 su 10.021 nel training
+  (WikiChurches + Wikidata). Escluderle non cambia le metriche (stile 0,777 → 0,776 chiese, 0,680 → 0,679 monumenti;
+  famiglia invariata); la riga «tutte le immagini» riproduce esattamente il test di D17. Tra 0,5 e 0,75 compaiono anche
+  fotografie vere: nell'app l'avviso «sembra un disegno» usa la soglia 0,9.
+- Nomi sui ritagli MonuMAI (validazione per monumento, 867 ritagli + 600 «altro»): nome corretto 0,302 (05), 0,172
+  (zero-shot v2: i nomi generici aggiunti sottraggono i ritagli agli elementi diagnostici), **0,938** con il
+  classificatore (media per elemento 0,83; timpano curvo 13 ritagli e arco trilobato 14: valori molto incerti).
+  Soglie: classificatore 0,30 (il minimo della griglia: nessuna astensione), zero-shot 0,99 (80% mai raggiunto).
+- Sulle zone LIME delle 48 foto: solo il 20% delle zone riceve un nome e 2 nomi su 3 sono «timpano spezzato», anche su
+  un cornicione rinascimentale. Il «✓» sulla famiglia nascondeva elementi barocchi su edifici rinascimentali.
+  Cause: esempi di addestramento diversi dalle zone LIME (ritagli stretti e centrati) ed esempi «altro» solo romanici.
+
+## D21 – Nomi degli elementi tarati sulle zone tipo LIME (notebook 05c)
+- **Esempi nelle condizioni dell'app:** sulle foto MonuMAI annotate (geometria 448 × 448, super-pixel SLIC, riquadri
+  costruiti come le zone LIME) ogni riquadro diventa esempio di un elemento diagnostico se lo contiene in gran parte
+  (≥ 60%, e l'elemento occupa ≥ 15% del riquadro) o se l'elemento occupa almeno metà del riquadro; esempio «altro»
+  se non tocca alcun elemento annotato di qualsiasi tipo; altrimenti è scartato. Si aggiungono zone delle foto
+  romaniche e i ritagli stretti del 05b.
+- **Confronto equo:** in ogni parte della validazione incrociata (per monumento) si addestrano il classificatore come
+  nel 05b e quello nuovo; metriche separate per dominio (ritagli stretti, zone con elementi, zone senza elementi).
+- **Soglia** tarata sulle zone tipo LIME (precisione dei nomi mostrati ≥ 80%, contando come errore ogni nome in una
+  zona senza elementi). Zero-shot usato solo per scartare lo sfondo. «✓» solo se l'elemento è tipico dello stile
+  predetto; altrimenti «di solito: <stile>».

@@ -287,7 +287,7 @@ def prob_non_foto(fm: FinalModel, E: np.ndarray) -> np.ndarray:
     return p[:, len(FRASI_FOTO):].sum(1)
 
 
-def fit_probe(E: np.ndarray, nomi, groups, seed: int = config.SEED):
+def fit_probe(E: np.ndarray, nomi, groups, seed: int = config.SEED, Cs=(0.001, 0.01, 0.1, 1.0)):
     """Classificatore lineare (regressione logistica multinomiale = un neurone softmax per classe) sui vettori CLIP
     dei ritagli: 9 elementi diagnostici + classe ALTRO (ritagli casuali senza elementi diagnostici).
     Regolarizzazione scelta con validazione incrociata raggruppata per monumento."""
@@ -298,12 +298,30 @@ def fit_probe(E: np.ndarray, nomi, groups, seed: int = config.SEED):
     nomi, groups = np.asarray(nomi), np.asarray(groups)
     try:
         cv = list(GroupKFold(min(3, len(np.unique(groups)))).split(E, nomi, groups))
-        lr = LogisticRegressionCV(Cs=[0.001, 0.01, 0.1, 1.0], cv=cv, class_weight="balanced", max_iter=3000,
-                                  random_state=seed)
+        lr = LogisticRegressionCV(Cs=list(Cs), cv=cv, class_weight="balanced", max_iter=3000,
+                                  random_state=seed, n_jobs=-1)
         return make_pipeline(StandardScaler(), lr).fit(E, nomi)
     except ValueError:                                     # pochi esempi: regolarizzazione fissa
         lr = LogisticRegression(C=0.01, class_weight="balanced", max_iter=3000, random_state=seed)
         return make_pipeline(StandardScaler(), lr).fit(E, nomi)
+
+
+SOGLIA_NON_FOTO = 0.9      # sopra questa probabilità l'immagine è quasi certamente un disegno o un'incisione
+ZS_SPENTO = 1.01           # soglia zero-shot impossibile: CLIP zero-shot serve solo a scartare lo sfondo
+
+
+def relazione_stile(tipico, stile_pred: str) -> str | None:
+    """Rapporto tra lo stile/famiglia tipico di un elemento e lo stile predetto:
+    'stile' (coincide), 'famiglia' (stessa famiglia, stile diverso o elemento tipico di una famiglia),
+    'altra famiglia', oppure None se l'elemento non è tipico di nulla."""
+    if tipico is None:
+        return None
+    if tipico == stile_pred:
+        return "stile"
+    f_pred = famiglia_tipica(stile_pred)
+    if tipico in config.FAMIGLIE:
+        return "famiglia" if famiglia_tipica(tipico) == f_pred else "altra famiglia"
+    return "famiglia" if famiglia_tipica(tipico) == f_pred else "altra famiglia"
 
 
 class ElementNamer:
@@ -311,14 +329,13 @@ class ElementNamer:
 
     1. Classificatore addestrato sui ritagli MonuMAI (9 elementi diagnostici + «altro»): se indica un elemento
        diagnostico con confidenza ≥ soglia_probe, quello è il nome.
-    2. Altrimenti CLIP zero-shot sugli altri nomi del vocabolario (frasi multiple per nome): le zone di sfondo
-       (cielo, alberi, persone…) vengono scartate; il nome si mostra se la probabilità è ≥ soglia_zs.
-    3. Astensione: sotto le soglie (scelte per una precisione ≈ 80%) il nome non viene mostrato e la zona resta un
-       «dettaglio decisivo» senza nome.
-    Senza classificatore (probe=None) i 9 elementi diagnostici sono trattati come gli altri nomi zero-shot.
+    2. CLIP zero-shot sul vocabolario (frasi multiple per nome) serve a riconoscere le zone di sfondo (cielo,
+       alberi, persone…), che vengono scartate. Con soglia_zs ≤ 1 dà anche i nomi degli altri elementi; con la
+       soglia predefinita (ZS_SPENTO) non dà nomi: sui ritagli annotati non raggiunge l'80% di precisione.
+    3. Astensione: sotto la soglia la zona resta un «dettaglio decisivo» senza nome.
     """
 
-    def __init__(self, fm: FinalModel, probe=None, soglia_probe: float = 0.0, soglia_zs: float = 0.0):
+    def __init__(self, fm: FinalModel, probe=None, soglia_probe: float = 0.0, soglia_zs: float = ZS_SPENTO):
         self.fm, self.probe = fm, probe
         self.soglia_probe, self.soglia_zs = soglia_probe, soglia_zs
         self.T = fm.text_embed(V_FRASI, TEMPLATE)
@@ -353,7 +370,8 @@ class ElementNamer:
             return self._out(V_NOMI[j], z[j], True, "zero-shot")
         if cand_diag is not None:
             return self._out(cand_diag[0], cand_diag[1], False, "classificatore")
-        return self._out(V_NOMI[j], z[j], False, "zero-shot")
+        return {"nome": None, "candidato": None, "conf": float(z[j]), "tipico": None, "tipo": "elemento",
+                "via": "zero-shot"}
 
     def name(self, crops=None, E: np.ndarray | None = None) -> list[dict]:
         E = self.fm.image_embed(crops) if E is None else E
@@ -371,7 +389,7 @@ class ElementNamer:
         import joblib
         d = joblib.load(path)
         assert d["vocabolario"] == V_NOMI, "vocabolario cambiato: rieseguire il notebook 05b"
-        return cls(fm, d["probe"], d["soglia_probe"], d["soglia_zs"])
+        return cls(fm, d["probe"], d["soglia_probe"], d.get("soglia_zs", ZS_SPENTO))
 
 
 # ---------------------------------------------------------------------------
@@ -421,20 +439,25 @@ def lime_explain(predict_columns, img: np.ndarray, columns, num_samples: int = 5
     return {"segments": seg, "pesi": pesi, "r2": r2, "pred": Y[0]}
 
 
+def box_of_segment(seg: np.ndarray, s: int, min_side: int = 128, margin: float = 0.2):
+    """Riquadro (x0, y0, x1, y1) attorno al super-pixel s, con margine e lato minimo min_side px."""
+    H, W = seg.shape
+    ys, xs = np.nonzero(seg == s)
+    cy, cx = (ys.min() + ys.max()) / 2, (xs.min() + xs.max()) / 2
+    h = max(min_side, (ys.max() - ys.min()) * (1 + 2 * margin))
+    w = max(min_side, (xs.max() - xs.min()) * (1 + 2 * margin))
+    y0, x0 = int(max(0, cy - h / 2)), int(max(0, cx - w / 2))
+    y1, x1 = int(min(H, y0 + h)), int(min(W, x0 + w))
+    return x0, y0, x1, y1
+
+
 def top_regions(seg: np.ndarray, weights: np.ndarray, k: int = 3, min_side: int = 128, margin: float = 0.2):
     """Riquadri dei k super-pixel con peso positivo più alto, allargati ad almeno min_side px."""
-    H, W = seg.shape
     boxes = []
     for s in np.argsort(-weights)[:k]:
         if weights[s] <= 0:
             break
-        ys, xs = np.nonzero(seg == s)
-        cy, cx = (ys.min() + ys.max()) / 2, (xs.min() + xs.max()) / 2
-        h = max(min_side, (ys.max() - ys.min()) * (1 + 2 * margin))
-        w = max(min_side, (xs.max() - xs.min()) * (1 + 2 * margin))
-        y0, x0 = int(max(0, cy - h / 2)), int(max(0, cx - w / 2))
-        y1, x1 = int(min(H, y0 + h)), int(min(W, x0 + w))
-        boxes.append((x0, y0, x1, y1, float(weights[s])))
+        boxes.append((*box_of_segment(seg, int(s), min_side, margin), float(weights[s])))
     return boxes
 
 

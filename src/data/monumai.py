@@ -208,3 +208,87 @@ def element_crops(ann: pd.DataFrame, root: str | Path, out_dir: str | Path, elem
             rows.append({"path": rel, "style": style, "label": label_of[style], "element": r.element,
                          "monument": _monument(Path(fname).stem), "source_file": f"{style}/{fname}"})
     return pd.DataFrame(rows)
+
+
+# ---------------------------------------------------------------------------
+# Zone «tipo LIME» dalle foto MonuMAI annotate (verifica dei nomi degli elementi nelle condizioni dell'app)
+# ---------------------------------------------------------------------------
+def image_path(root: str | Path, style: str, fname: str) -> Path | None:
+    src = Path(root) / style / fname
+    if src.exists():
+        return src
+    alt = list((Path(root) / style).glob(Path(fname).stem + ".*"))
+    return alt[0] if alt else None
+
+
+def _inter(a, b) -> float:
+    w = min(a[2], b[2]) - max(a[0], b[0])
+    h = min(a[3], b[3]) - max(a[1], b[1])
+    return max(0.0, w) * max(0.0, h)
+
+
+def _area(a) -> float:
+    return max(0.0, a[2] - a[0]) * max(0.0, a[3] - a[1])
+
+
+def lime_like_regions(ann: pd.DataFrame, root: str | Path, element_style: dict[str, str], max_pos: int = 3,
+                      max_neg: int = 3, size: int = 448, short: int = 512, seed: int = config.SEED):
+    """Per ogni foto MonuMAI: stessa geometria dell'app (lato corto 512, ritaglio centrale 448), super-pixel SLIC e
+    riquadri costruiti come le zone LIME (xai.box_of_segment). Ogni riquadro diventa:
+    - esempio dell'elemento diagnostico e (coerente con lo stile dell'edificio) se contiene almeno il 60% del
+      riquadro annotato di e e l'elemento occupa almeno il 15% del riquadro (elementi piccoli), oppure se l'elemento
+      occupa almeno metà del riquadro (elementi grandi, di cui la zona mostra una parte);
+    - esempio «altro» se non tocca nessun elemento annotato (di qualsiasi tipo: < 10% di ogni elemento e < 5%
+      del riquadro);
+    - scartato negli altri casi (ambiguo).
+    Restituisce, una foto alla volta, (ritagli, etichette, monumento, file)."""
+    from src import xai
+    rng = np.random.default_rng(seed)
+    for (style, fname), g in ann.groupby(["style", "file"]):
+        src = image_path(root, style, fname)
+        if src is None:
+            continue
+        try:
+            im = ImageOps.exif_transpose(Image.open(src)).convert("RGB")
+        except Exception:  # noqa: BLE001
+            continue
+        W0, H0 = im.size
+        s = short / min(W0, H0)
+        W1, H1 = max(size, round(W0 * s)), max(size, round(H0 * s))
+        l, t = (W1 - size) // 2, (H1 - size) // 2
+        img = np.asarray(im.resize((W1, H1), Image.LANCZOS).crop((l, t, l + size, t + size)))
+        boxes_ann = []
+        for r in g.itertuples():
+            sx = W0 / r.width if r.width else 1.0
+            sy = H0 / r.height if r.height else 1.0
+            b = (r.xmin * sx * W1 / W0 - l, r.ymin * sy * H1 / H0 - t, r.xmax * sx * W1 / W0 - l, r.ymax * sy * H1 / H0 - t)
+            diag = element_style.get(r.element) == style
+            boxes_ann.append((b, r.element if diag else None))
+        seg = xai.superpixels(img)
+        pos, neg = {}, []
+        for sp in rng.permutation(seg.max() + 1):
+            bx = xai.box_of_segment(seg, int(sp))
+            ab = _area(bx)
+            best, best_frac, tocca = None, 0.0, False
+            for b, el in boxes_ann:
+                aa = _area(b)
+                if aa <= 0:
+                    continue
+                cov_el, cov_box = _inter(bx, b) / aa, _inter(bx, b) / ab
+                if cov_el >= 0.10 or cov_box >= 0.05:
+                    tocca = True
+                if el and ((cov_el >= 0.60 and cov_box >= 0.15) or cov_box >= 0.50) and cov_box > best_frac:
+                    best, best_frac = el, cov_box
+            if best is not None:
+                if len(pos.setdefault(best, [])) < max_pos:
+                    pos[best].append(bx)
+            elif not tocca and len(neg) < max_neg:
+                neg.append(bx)
+        crops, labels = [], []
+        for el, bxs in pos.items():
+            for bx in bxs:
+                crops.append(np.ascontiguousarray(img[bx[1]:bx[3], bx[0]:bx[2]])); labels.append(el)
+        for bx in neg:
+            crops.append(np.ascontiguousarray(img[bx[1]:bx[3], bx[0]:bx[2]])); labels.append(None)
+        if crops:
+            yield crops, labels, _monument(Path(fname).stem), f"{style}/{fname}"
