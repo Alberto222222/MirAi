@@ -1,0 +1,202 @@
+{
+ "qualita_dati": {
+  "test": [
+   {
+    "test": "WikiChurches",
+    "insieme": "tutte le immagini",
+    "immagini": 1481,
+    "accuratezza stile": 0.777,
+    "balanced accuracy": 0.712,
+    "macro-F1": 0.724,
+    "accuratezza famiglia": 0.912
+   },
+   {
+    "test": "WikiChurches",
+    "insieme": "solo fotografie",
+    "immagini": 1480,
+    "accuratezza stile": 0.776,
+    "balanced accuracy": 0.712,
+    "macro-F1": 0.724,
+    "accuratezza famiglia": 0.912
+   },
+   {
+    "test": "Wikidata",
+    "insieme": "tutte le immagini",
+    "immagini": 1214,
+    "accuratezza stile": 0.68,
+    "balanced accuracy": 0.707,
+    "macro-F1": 0.692,
+    "accuratezza famiglia": 0.862
+   },
+   {
+    "test": "Wikidata",
+    "insieme": "solo fotografie",
+    "immagini": 1197,
+    "accuratezza stile": 0.679,
+    "balanced accuracy": 0.706,
+    "macro-F1": 0.691,
+    "accuratezza famiglia": 0.861
+   }
+  ],
+  "segnalate_test": 18,
+  "segnalate_training": [
+   {
+    "origine": "WikiChurches",
+    "segnalate": 12,
+    "immagini": 4962
+   },
+   {
+    "origine": "Wikidata",
+    "segnalate": 51,
+    "immagini": 5059
+   },
+   {
+    "origine": "ritagli MonuMAI",
+    "segnalate": 16,
+    "immagini": 867
+   }
+  ]
+ },
+ "non_fotografie_nelle_48": 1,
+ "nomi_elementi": [
+  {
+   "versione": "05 \u2013 zero-shot, 31 nomi",
+   "nome corretto": 0.302,
+   "nomi mostrati": 1.0,
+   "precisione dei nomi mostrati": 0.302,
+   "famiglia tipica corretta": 0.938
+  },
+  {
+   "versione": "05b \u2013 zero-shot, 46 nomi, frasi multiple",
+   "nome corretto": 0.172,
+   "nomi mostrati": 1.0,
+   "precisione dei nomi mostrati": 0.172,
+   "famiglia tipica corretta": 0.915
+  },
+  {
+   "versione": "05b \u2013 classificatore + zero-shot",
+   "nome corretto": 0.938,
+   "nomi mostrati": 1.0,
+   "precisione dei nomi mostrati": 0.938,
+   "famiglia tipica corretta": 0.985
+  },
+  {
+   "versione": "05b \u2013 con astensione (app)",
+   "nome corretto": 0.938,
+   "nomi mostrati": 0.995,
+   "precisione dei nomi mostrati": 0.942,
+   "famiglia tipica corretta": 0.989
+  }
+ ],
+ "soglie": {
+  "classificatore": 0.3,
+  "zero_shot": 0.99
+ },
+ "falsi_allarmi_altro": {
+  "senza astensione": 0.018333333333333333,
+  "con astensione": 0.018333333333333333
+ },
+ "nomi_per_elemento": [
+  {
+   "elemento": "arco a sesto acuto",
+   "05": 0.49,
+   "05b classificatore": 0.97,
+   "mostrati": 1.0,
+   "precisione mostrati": 0.97
+  },
+  {
+   "elemento": "arco inflesso",
+   "05": 0.01,
+   "05b classificatore": 0.95,
+   "mostrati": 1.0,
+   "precisione mostrati": 0.95
+  },
+  {
+   "elemento": "arco trilobato",
+   "05": 0.29,
+   "05b classificatore": 0.43,
+   "mostrati": 0.93,
+   "precisione mostrati": 0.46
+  },
+  {
+   "elemento": "colonna tortile (salomonica)",
+   "05": 0.78,
+   "05b classificatore": 1.0,
+   "mostrati": 1.0,
+   "precisione mostrati": 1.0
+  },
+  {
+   "elemento": "pinnacolo gotico",
+   "05": 0.85,
+   "05b classificatore": 0.91,
+   "mostrati": 1.0,
+   "precisione mostrati": 0.91
+  },
+  {
+   "elemento": "serliana",
+   "05": 0.25,
+   "05b classificatore": 0.8,
+   "mostrati": 1.0,
+   "precisione mostrati": 0.8
+  },
+  {
+   "elemento": "timpano curvo",
+   "05": 0.85,
+   "05b classificatore": 0.62,
+   "mostrati": 1.0,
+   "precisione mostrati": 0.62
+  },
+  {
+   "elemento": "timpano spezzato",
+   "05": 0.04,
+   "05b classificatore": 0.98,
+   "mostrati": 1.0,
+   "precisione mostrati": 0.98
+  },
+  {
+   "elemento": "timpano triangolare",
+   "05": 0.18,
+   "05b classificatore": 0.85,
+   "mostrati": 0.96,
+   "precisione mostrati": 0.89
+  }
+ ],
+ "zone_lime": [
+  {
+   "versione": "05 (prime 3 zone)",
+   "zone": 144,
+   "con nome": 1.0,
+   "nome pi\u00f9 frequente": "campanile (14%)",
+   "nomi con stile o famiglia tipica": 102,
+   "coerenti con la famiglia predetta": 0.735
+  },
+  {
+   "versione": "05b (prime 3 zone, sfondo = senza nome)",
+   "zone": 144,
+   "con nome": 0.194,
+   "nome pi\u00f9 frequente": "timpano spezzato (64%)",
+   "nomi con stile o famiglia tipica": 27,
+   "coerenti con la famiglia predetta": 1.0
+  },
+  {
+   "versione": "05b (zone mostrate nell'app)",
+   "zone": 144,
+   "con nome": 0.201,
+   "nome pi\u00f9 frequente": "timpano spezzato (66%)",
+   "nomi con stile o famiglia tipica": 28,
+   "coerenti con la famiglia predetta": 1.0
+  }
+ ],
+ "galleria": [
+  "stile_romanesque",
+  "stile_gothic",
+  "stile_renaissance",
+  "stile_baroque",
+  "stile_classical",
+  "stile_neoclassical",
+  "rinascimentale_come_barocco",
+  "gotico_come_rinascimentale",
+  "non_fotografia"
+ ],
+ "file_namer": "/content/drive/MyDrive/mirai_data/models/elementi_namer.joblib"
+}

@@ -1,0 +1,5 @@
+versione,nome corretto,nomi mostrati,precisione dei nomi mostrati,famiglia tipica corretta
+"05 – zero-shot, 31 nomi",0.302,1.0,0.302,0.938
+"05b – zero-shot, 46 nomi, frasi multiple",0.172,1.0,0.172,0.915
+05b – classificatore + zero-shot,0.938,1.0,0.938,0.985
+05b – con astensione (app),0.938,0.995,0.942,0.989
