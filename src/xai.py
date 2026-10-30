@@ -237,7 +237,7 @@ class GradCAM:
         x = np.asarray(imgs, dtype=np.float32)
         return x[..., ::-1] - VGG_MEAN_BGR.numpy()
 
-    def predict(self, imgs, batch: int = 16) -> np.ndarray:
+    def predict(self, imgs, batch: int = 4) -> np.ndarray:
         x = self.preprocess(imgs)
         return np.concatenate([self.model.predict(x[i:i + batch], verbose=0) for i in range(0, len(x), batch)])
 
