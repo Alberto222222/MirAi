@@ -526,3 +526,35 @@ della VGG-16 a 6 stili. Caratteristiche standardizzate e ridotte con PCA a 256 c
 2.816 dimensioni sono dominate dal rumore e l'addestramento online sarebbe lento); griglia 20 × 20 (≈ 5·√N neuroni
 per N ≈ 11.000). La stessa rappresentazione serve all'app per gli edifici simili e per il filtro delle foto fuori
 dominio (foto Ispano-musulmane di MonuMAI, soglia al 95° percentile del validation).
+
+**Risultati del notebook 04b.** PCA a 256 componenti (79,1% della varianza); SOM 20 × 20, errore topografico 0,036
+(training) e 0,043 (test), migliore della SOM sulla VGG-16 (0,068 / 0,103).
+- Le 3 famiglie formano regioni separate (purezza media 0,88); il Rinascimentale ha 34 neuroni propri (0 nella SOM
+  della VGG-16 a 4 stili).
+- SOM come classificatore, senza etichette in addestramento: famiglia 0,859 (chiese) e 0,835 (monumenti), contro 0,912
+  e 0,862 della rete; stile 0,638 e 0,572 contro 0,777 e 0,680. Le famiglie sono una struttura presente nei dati.
+- Classi problematiche: delle 100 chiese rinascimentali del test, 51 cadono in regioni barocche; degli edifici gotici
+  non religiosi, il 77% cade in regioni medievali (l'errore Gotico → Rinascimentale nasce soprattutto nella testa).
+- Spazio CLIP + DINOv2 contro VGG-16 (stessa SOM): famiglia sui monumenti 0,803 contro 0,761, stile 0,546 contro 0,451.
+- Edifici simili (5 vicini): nello spazio della testa famiglia@5 0,884 / 0,840 e stile@5 0,711 / 0,629 (chiese /
+  monumenti), contro 0,857 / 0,811 e 0,661 / 0,565 delle caratteristiche grezze, che riflettono anche materiale,
+  regione e tipo di edificio. L'app usa lo spazio della testa e mostra solo edifici dello stile predetto.
+- Foto fuori dominio (Ispano-musulmane): il modello assegna comunque una famiglia (Classico antico 145, Medievale 132,
+  Classicismo moderno 50), con confidenza media 0,66 contro 0,91 sul test. Punteggio scelto sulla metà A: distanza dai
+  5 vicini (AUROC 0,97 / 0,96). Con soglia al 95° percentile del validation: respinto il 75% delle foto fuori dominio
+  e il 4,6% delle foto vere. La confidenza della softmax è meno efficace (AUROC 0,88 per la famiglia, 0,74 per lo stile).
+
+## D19 – Spiegabilità: LIME sul modello definitivo, Grad-CAM sulla VGG-16 (notebook 05)
+Il modello definitivo è composto da due Vision Transformer congelati e da una testa MLP. Grad-CAM nasce per le reti
+convoluzionali (gradiente sull'ultima mappa spaziale); sui Transformer richiede adattamenti e produce mappe 16 × 16
+meno affidabili. LIME tratta il modello come una scatola nera e spiega quindi esattamente il modello dell'app.
+- **LIME** (implementato secondo le slide): super-pixel SLIC (~60), 600 versioni perturbate con super-pixel spenti
+  (colore medio), kernel esponenziale sulla distanza del coseno (larghezza 0,25), regressione Ridge pesata; l'R²
+  misura la fedeltà locale. Tre uscite spiegate: stile predetto, famiglia (somma degli stili), contrasto (stile
+  predetto − secondo stile).
+- **Grad-CAM** sulla VGG-16 a 6 stili (448 px, `block5_conv3`, mappa 28 × 28): metodo classico, come confronto.
+- **Deletion test**: sfocatura progressiva dei pixel dal più al meno importante, probabilità dello stile predetto,
+  area sotto la curva confrontata con un ordine casuale (test di Wilcoxon appaiato).
+- **Nomi degli elementi**: le 3 zone LIME più importanti vengono ritagliate e CLIP (zero-shot) sceglie il nome tra
+  31 frasi (elementi tipici degli stili e distrattori). Verifica sui ritagli degli elementi annotati da MonuMAI.
+Immagini nel formato di valutazione della VGG-16: lato corto 512 px, ritaglio centrale 448 × 448.

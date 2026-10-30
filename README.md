@@ -26,7 +26,7 @@ Foto 448×448 ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──�
 | 4f. Sei stili | monumenti di ogni tipo da Wikidata (+ Classico antico, Neoclassico), elementi MonuMAI | ✅ |
 | 4g. Transformer e gerarchia | CLIP + DINOv2 congelati, risposta famiglia → stile: **modello definitivo** | ✅ |
 | 5. Valutazione | accuracy, P/R/F1 per classe, matrice di confusione, McNemar | ☐ |
-| 6. Explainable AI | Grad-CAM, LIME, deletion test | ☐ |
+| 6. Explainable AI | LIME (modello definitivo), Grad-CAM (VGG-16), deletion test, nomi degli elementi | ⏳ |
 | 7. App | Gradio: stile + heatmap + descrizione di stile, elementi e monumento | ☐ |
 
 ## Risultati sul test ufficiale (1.481 immagini)
@@ -64,6 +64,7 @@ MirAi/
 │   ├── som.py            mappa auto-organizzante di Kohonen (NumPy)
 │   ├── foundation.py     CLIP / DINOv2 congelati: estrazione caratteristiche e teste
 │   ├── hierarchy.py      risposta gerarchica famiglia → stile e relative metriche
+│   ├── xai.py            LIME, Grad-CAM, deletion test, nomi degli elementi con CLIP
 │   ├── colab_git.py      commit e push da Colab senza esporre il token
 │   └── data/
 │       ├── wikichurches.py   download, indice, ridimensionamento, split, report
@@ -92,7 +93,8 @@ Le immagini **non** stanno su GitHub: sono su Google Drive
 9. `notebooks/01c_monumenti_wikidata.ipynb` (GPU): dataset di monumenti a 6 stili da Wikidata, con pulizia.
 10. `notebooks/03e_sei_stili.ipynb` (GPU): modello a 6 stili e decisione.
 11. `notebooks/03f_transformer_gerarchico.ipynb` (GPU): CLIP e DINOv2 congelati, risposta gerarchica.
-12. `notebooks/04b_som_modello_finale.ipynb` (GPU T4, quasi tutto CPU): SOM del modello definitivo, edifici simili, foto fuori dominio.
+12. `notebooks/05_spiegabilita.ipynb` (GPU): LIME, Grad-CAM e deletion test.
+13. `notebooks/04b_som_modello_finale.ipynb` (GPU T4, quasi tutto CPU): SOM del modello definitivo, edifici simili, foto fuori dominio.
 13. `notebooks/04_som.ipynb` (GPU): mappa di Kohonen dello spazio degli stili e chiese simili
    (usa la risoluzione indicata in `reports/metrics/modello_finale.json`).
 
