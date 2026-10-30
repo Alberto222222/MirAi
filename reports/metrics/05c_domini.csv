@@ -1,0 +1,9 @@
+classificatore,dominio,esempi,nome corretto (media pesata),nome corretto (media per elemento),falsi allarmi
+05b,ritagli stretti,867,0.943,0.857,
+05b,zone LIME – elementi,2759,0.677,0.473,
+05b,zone LIME – senza elementi (MonuMAI),3396,,,0.472
+05b,zone LIME – romanico,600,,,0.01
+05c,ritagli stretti,867,0.907,0.8,
+05c,zone LIME – elementi,2759,0.797,0.72,
+05c,zone LIME – senza elementi (MonuMAI),3396,,,0.138
+05c,zone LIME – romanico,600,,,0.047

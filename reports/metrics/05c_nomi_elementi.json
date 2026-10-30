@@ -1,0 +1,244 @@
+{
+ "esempi": {
+  "ritagli stretti": 867,
+  "zone LIME \u2013 elementi": 2759,
+  "zone LIME \u2013 senza elementi (MonuMAI)": 3396,
+  "zone LIME \u2013 romanico": 600
+ },
+ "domini": [
+  {
+   "classificatore": "05b",
+   "dominio": "ritagli stretti",
+   "esempi": 867,
+   "nome corretto (media pesata)": 0.943,
+   "nome corretto (media per elemento)": 0.857,
+   "falsi allarmi": NaN
+  },
+  {
+   "classificatore": "05b",
+   "dominio": "zone LIME \u2013 elementi",
+   "esempi": 2759,
+   "nome corretto (media pesata)": 0.677,
+   "nome corretto (media per elemento)": 0.473,
+   "falsi allarmi": NaN
+  },
+  {
+   "classificatore": "05b",
+   "dominio": "zone LIME \u2013 senza elementi (MonuMAI)",
+   "esempi": 3396,
+   "nome corretto (media pesata)": NaN,
+   "nome corretto (media per elemento)": NaN,
+   "falsi allarmi": 0.472
+  },
+  {
+   "classificatore": "05b",
+   "dominio": "zone LIME \u2013 romanico",
+   "esempi": 600,
+   "nome corretto (media pesata)": NaN,
+   "nome corretto (media per elemento)": NaN,
+   "falsi allarmi": 0.01
+  },
+  {
+   "classificatore": "05c",
+   "dominio": "ritagli stretti",
+   "esempi": 867,
+   "nome corretto (media pesata)": 0.907,
+   "nome corretto (media per elemento)": 0.8,
+   "falsi allarmi": NaN
+  },
+  {
+   "classificatore": "05c",
+   "dominio": "zone LIME \u2013 elementi",
+   "esempi": 2759,
+   "nome corretto (media pesata)": 0.797,
+   "nome corretto (media per elemento)": 0.72,
+   "falsi allarmi": NaN
+  },
+  {
+   "classificatore": "05c",
+   "dominio": "zone LIME \u2013 senza elementi (MonuMAI)",
+   "esempi": 3396,
+   "nome corretto (media pesata)": NaN,
+   "nome corretto (media per elemento)": NaN,
+   "falsi allarmi": 0.138
+  },
+  {
+   "classificatore": "05c",
+   "dominio": "zone LIME \u2013 romanico",
+   "esempi": 600,
+   "nome corretto (media pesata)": NaN,
+   "nome corretto (media per elemento)": NaN,
+   "falsi allarmi": 0.047
+  }
+ ],
+ "soglia_classificatore": 0.65,
+ "confronto_soglia": [
+  {
+   "index": "05b (soglia 0,30 del notebook 05b)",
+   "precisione dei nomi mostrati": 0.462,
+   "elementi riconosciuti e mostrati": 0.676,
+   "falsi allarmi (zone senza elementi)": 0.399
+  },
+  {
+   "index": "05c (soglia 0.65)",
+   "precisione dei nomi mostrati": 0.819,
+   "elementi riconosciuti e mostrati": 0.725,
+   "falsi allarmi (zone senza elementi)": 0.067
+  }
+ ],
+ "per_elemento": [
+  {
+   "index": "arco a sesto acuto",
+   "zone": 693.0,
+   "05b riconosciuti e mostrati": 0.8412698412698413,
+   "05c riconosciuti e mostrati": 0.8196248196248196
+  },
+  {
+   "index": "arco inflesso",
+   "zone": 335.0,
+   "05b riconosciuti e mostrati": 0.44477611940298506,
+   "05c riconosciuti e mostrati": 0.6567164179104478
+  },
+  {
+   "index": "arco trilobato",
+   "zone": 96.0,
+   "05b riconosciuti e mostrati": 0.23958333333333334,
+   "05c riconosciuti e mostrati": 0.46875
+  },
+  {
+   "index": "pinnacolo gotico",
+   "zone": 116.0,
+   "05b riconosciuti e mostrati": 0.5603448275862069,
+   "05c riconosciuti e mostrati": 0.9310344827586207
+  },
+  {
+   "index": "timpano triangolare",
+   "zone": 253.0,
+   "05b riconosciuti e mostrati": 0.42292490118577075,
+   "05c riconosciuti e mostrati": 0.6086956521739131
+  },
+  {
+   "index": "timpano curvo",
+   "zone": 45.0,
+   "05b riconosciuti e mostrati": 0.0,
+   "05c riconosciuti e mostrati": 0.3333333333333333
+  },
+  {
+   "index": "serliana",
+   "zone": 147.0,
+   "05b riconosciuti e mostrati": 0.2789115646258503,
+   "05c riconosciuti e mostrati": 0.35374149659863946
+  },
+  {
+   "index": "timpano spezzato",
+   "zone": 869.0,
+   "05b riconosciuti e mostrati": 0.9021864211737629,
+   "05c riconosciuti e mostrati": 0.7721518987341772
+  },
+  {
+   "index": "colonna tortile (salomonica)",
+   "zone": 205.0,
+   "05b riconosciuti e mostrati": 0.551219512195122,
+   "05c riconosciuti e mostrati": 0.8195121951219512
+  }
+ ],
+ "per_nome": [
+  {
+   "index": "arco a sesto acuto",
+   "05b volte mostrato": 881.0,
+   "05b precisione": 0.6617480136208853,
+   "05c volte mostrato": 644.0,
+   "05c precisione": 0.8819875776397516
+  },
+  {
+   "index": "arco inflesso",
+   "05b volte mostrato": 272.0,
+   "05b precisione": 0.5477941176470589,
+   "05c volte mostrato": 269.0,
+   "05c precisione": 0.8178438661710037
+  },
+  {
+   "index": "arco trilobato",
+   "05b volte mostrato": 119.0,
+   "05b precisione": 0.19327731092436976,
+   "05c volte mostrato": 69.0,
+   "05c precisione": 0.6521739130434783
+  },
+  {
+   "index": "pinnacolo gotico",
+   "05b volte mostrato": 96.0,
+   "05b precisione": 0.6770833333333334,
+   "05c volte mostrato": 121.0,
+   "05c precisione": 0.8925619834710744
+  },
+  {
+   "index": "timpano triangolare",
+   "05b volte mostrato": 202.0,
+   "05b precisione": 0.5297029702970297,
+   "05c volte mostrato": 207.0,
+   "05c precisione": 0.7439613526570048
+  },
+  {
+   "index": "timpano curvo",
+   "05b volte mostrato": 27.0,
+   "05b precisione": 0.0,
+   "05c volte mostrato": 25.0,
+   "05c precisione": 0.6
+  },
+  {
+   "index": "serliana",
+   "05b volte mostrato": 107.0,
+   "05b precisione": 0.38317757009345793,
+   "05c volte mostrato": 87.0,
+   "05c precisione": 0.5977011494252874
+  },
+  {
+   "index": "timpano spezzato",
+   "05b volte mostrato": 2219.0,
+   "05b precisione": 0.35331230283911674,
+   "05c volte mostrato": 849.0,
+   "05c precisione": 0.790341578327444
+  },
+  {
+   "index": "colonna tortile (salomonica)",
+   "05b volte mostrato": 118.0,
+   "05b precisione": 0.9576271186440678,
+   "05c volte mostrato": 171.0,
+   "05c precisione": 0.9824561403508771
+  }
+ ],
+ "zone_lime": [
+  {
+   "versione": "05b",
+   "zone": 144,
+   "con nome": 0.1875,
+   "nome pi\u00f9 frequente": "timpano spezzato (63%)",
+   "nomi con stile tipico": 26,
+   "stesso stile": 5,
+   "stessa famiglia, altro stile": 21,
+   "altra famiglia": 0
+  },
+  {
+   "versione": "05c",
+   "zone": 144,
+   "con nome": 0.08333333333333333,
+   "nome pi\u00f9 frequente": "timpano spezzato (67%)",
+   "nomi con stile tipico": 10,
+   "stesso stile": 5,
+   "stessa famiglia, altro stile": 5,
+   "altra famiglia": 0
+  }
+ ],
+ "galleria": [
+  "stile_romanesque",
+  "stile_gothic",
+  "stile_renaissance",
+  "stile_baroque",
+  "stile_classical",
+  "stile_neoclassical",
+  "rinascimentale_come_barocco",
+  "gotico_come_rinascimentale"
+ ],
+ "soglia_non_foto": 0.9,
+ "file_namer": "/content/drive/MyDrive/mirai_data/models/elementi_namer.joblib"
+}
