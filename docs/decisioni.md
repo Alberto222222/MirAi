@@ -625,3 +625,35 @@ Correzioni al notebook 05 senza riaddestrare il modello di stile; LIME non cambi
 - **Soglia** tarata sulle zone tipo LIME (precisione dei nomi mostrati ≥ 80%, contando come errore ogni nome in una
   zona senza elementi). Zero-shot usato solo per scartare lo sfondo. «✓» solo se l'elemento è tipico dello stile
   predetto; altrimenti «di solito: <stile>».
+
+**Risultati del notebook 05c** (7.622 esempi da 1.045 gruppi; validazione incrociata a 5 parti per monumento).
+
+| Classificatore | Ritagli stretti: nome corretto | Zone LIME con elementi: nome corretto | Falsi allarmi (zone MonuMAI senza elementi) |
+|---|---|---|---|
+| come nel 05b | 0,943 (0,857 per elemento) | 0,677 (0,473 per elemento) | 0,472 |
+| 05c | 0,907 (0,800 per elemento) | **0,797 (0,720 per elemento)** | **0,138** |
+
+Con la soglia scelta (0,65, la più bassa con precisione ≥ 80% sulle zone tipo LIME): precisione dei nomi mostrati
+0,819 (05b con la sua soglia: 0,462), elementi riconosciuti e mostrati 0,725, falsi allarmi 0,067 (05b: 0,399).
+Precisione per nome mostrato: colonna tortile 0,98 · pinnacolo gotico 0,89 · arco a sesto acuto 0,88 · arco inflesso
+0,82 · timpano spezzato 0,79 · timpano triangolare 0,74 · arco trilobato 0,65 · timpano curvo 0,60 · serliana 0,60.
+Sulle 48 foto di valutazione riceve un nome l'8% delle zone (12 su 144): metà degli stili (Romanico, Classico antico,
+Neoclassico) non ha elementi annotati in MonuMAI.
+
+## D22 – Chiusura della spiegabilità: cosa entra nell'app e nel paper
+- **LIME è il metodo di spiegazione dell'app**, applicato al modello definitivo: tre uscite (famiglia, stile,
+  contrasto con lo stile rivale), 600 perturbazioni, zone decisive ingrandite. Fedeltà verificata con l'R² e con il
+  deletion test (D19). La pipeline è raccolta in `xai.spiega`.
+- **Grad-CAM resta sulla VGG-16, solo come confronto nel paper.** Non si applica al modello definitivo: non ne cambia
+  le metriche (una spiegazione non modifica le predizioni) e sui due Vision Transformer congelati richiederebbe mappe
+  16 × 16 da combinare tra due reti, meno affidabili. La divisione è motivata: Grad-CAM è nato per le reti
+  convoluzionali, LIME è indipendente dal modello. Ciascuno è validato contro il proprio ordine casuale; le due AUC non
+  si confrontano direttamente.
+- **Nomi degli elementi:** classificatore del 05c con soglia 0,65; l'app mostra solo i 5 nomi con precisione ≥ 0,75
+  (`xai.NOMI_AFFIDABILI`). Le altre zone sono «dettaglio decisivo», senza nome. Il ✓ compare solo se l'elemento è
+  tipico dello stile predetto.
+- **Non si prosegue** con altri esperimenti sui nomi (vocabolari, zero-shot): i limiti restanti dipendono dagli
+  elementi annotati disponibili (9, per 3 stili su 6) e non dal metodo.
+- Notebook di riferimento: 05 (LIME, Grad-CAM, deletion test) e 05c (nomi). Il 05b è un passaggio intermedio:
+  il vocabolario zero-shot ampliato era peggiore (0,30 → 0,17) e il classificatore addestrato su ritagli stretti
+  non funzionava sulle zone LIME.

@@ -1,24 +1,32 @@
-"""Spiegabilità del modello (notebook 05 e app).
+"""Spiegabilità del modello definitivo (notebook 05, 05c e app).
+
+Schema della spiegazione di una foto (funzione `spiega`, usata dall'app):
+
+    foto 448 × 448 ──► modello definitivo ──► famiglia, stile, stile rivale
+          │
+          └──► LIME ──► peso di ogni super-pixel per 3 uscite: famiglia, stile, contrasto (stile − rivale)
+                  │
+                  └──► zone più importanti per lo stile ──► ritaglio ingrandito
+                                                              └──► nome dell'elemento (se affidabile)
 
 - LIME (Local Interpretable Model-agnostic Explanations), implementato come nelle slide:
-  1. l'immagine è divisa in super-pixel (SLIC);
+  1. l'immagine è divisa in super-pixel (SLIC, ~60);
   2. si generano N versioni perturbate spegnendo a caso dei super-pixel (sostituiti dal loro colore medio);
   3. il modello predice ogni versione;
   4. ogni versione è pesata con un kernel esponenziale sulla distanza del coseno dall'immagine originale
      (località);
   5. una regressione lineare pesata (Ridge) approssima il modello attorno all'immagine: il coefficiente di ogni
      super-pixel è la sua importanza; l'R² della regressione misura la fedeltà locale della spiegazione.
-  Si applica a qualsiasi modello: qui spiega il modello definitivo (CLIP + DINOv2 + testa MLP).
-- Grad-CAM sulla VGG-16 (rete convoluzionale): gradiente dell'uscita scelta rispetto alle mappe di
-  'block5_conv3', media spaziale come peso di ogni mappa, somma pesata e ReLU.
-- Tre uscite spiegabili: stile, famiglia (somma degli stili della famiglia), contrasto (stile − stile rivale).
+  LIME tratta il modello come una scatola nera: spiega esattamente il modello dell'app (CLIP + DINOv2 + testa MLP).
 - Deletion test: si cancellano (sfocano) i pixel dal più al meno importante e si misura la caduta della
   probabilità; una spiegazione fedele fa cadere la probabilità più in fretta di un ordine casuale.
-- Nome degli elementi: CLIP confronta il ritaglio di una zona importante con frasi come «a pointed gothic arch».
-  Versione 1 (notebook 05): 31 nomi, una frase ciascuno. Versione 2 (notebook 05b, app): vocabolario più ampio con
-  più frasi per nome, classificatore lineare addestrato sui ritagli MonuMAI per i 9 elementi diagnostici,
-  zone di sfondo scartate e astensione sotto una soglia di confidenza (ElementNamer).
+- Nomi degli elementi (ElementNamer): classificatore lineare sui vettori CLIP dei ritagli, addestrato su zone
+  costruite come le zone LIME delle foto MonuMAI annotate (notebook 05c); si mostrano solo i nomi con precisione
+  misurata ≥ 0,75 e sopra la soglia di confidenza, altrimenti la zona resta un «dettaglio decisivo».
+- Grad-CAM sulla VGG-16 (rete convoluzionale, solo confronto nel notebook 05 e nel paper): gradiente dell'uscita
+  rispetto alle mappe di 'block5_conv3', media spaziale come peso di ogni mappa, somma pesata e ReLU.
 - Controllo di qualità: probabilità che un'immagine sia un disegno o un'incisione invece di una foto.
+- Il vocabolario ELEMENTI (31 nomi, zero-shot) è quello del notebook 05, conservato per riproducibilità.
 """
 from __future__ import annotations
 
@@ -308,6 +316,11 @@ def fit_probe(E: np.ndarray, nomi, groups, seed: int = config.SEED, Cs=(0.001, 0
 
 SOGLIA_NON_FOTO = 0.9      # sopra questa probabilità l'immagine è quasi certamente un disegno o un'incisione
 ZS_SPENTO = 1.01           # soglia zero-shot impossibile: CLIP zero-shot serve solo a scartare lo sfondo
+# Nomi con precisione ≥ 0,75 sulle zone tipo LIME (notebook 05c, validazione incrociata per monumento):
+# arco a sesto acuto 0,88 · pinnacolo gotico 0,89 · arco inflesso 0,82 · colonna tortile 0,98 · timpano spezzato 0,79.
+# Esclusi: timpano triangolare 0,74 · arco trilobato 0,65 · timpano curvo 0,60 · serliana 0,60.
+NOMI_AFFIDABILI = ("arco a sesto acuto", "pinnacolo gotico", "arco inflesso", "colonna tortile (salomonica)",
+                   "timpano spezzato")
 
 
 def relazione_stile(tipico, stile_pred: str) -> str | None:
@@ -335,8 +348,10 @@ class ElementNamer:
     3. Astensione: sotto la soglia la zona resta un «dettaglio decisivo» senza nome.
     """
 
-    def __init__(self, fm: FinalModel, probe=None, soglia_probe: float = 0.0, soglia_zs: float = ZS_SPENTO):
+    def __init__(self, fm: FinalModel, probe=None, soglia_probe: float = 0.0, soglia_zs: float = ZS_SPENTO,
+                 affidabili=None):
         self.fm, self.probe = fm, probe
+        self.affidabili = None if affidabili is None else set(affidabili)    # None = tutti i nomi
         self.soglia_probe, self.soglia_zs = soglia_probe, soglia_zs
         self.T = fm.text_embed(V_FRASI, TEMPLATE)
         self.diag = np.array([t == "diagnostico" for t in V_TIPO])
@@ -359,7 +374,8 @@ class ElementNamer:
             nome = str(self.probe.classes_[k])
             if nome != ALTRO:
                 if pp[k] >= self.soglia_probe:
-                    return self._out(nome, pp[k], True, "classificatore")
+                    ok = self.affidabili is None or nome in self.affidabili
+                    return self._out(nome, pp[k], ok, "classificatore")
                 cand_diag = (nome, pp[k])
             z = np.where(self.diag, 0.0, z)                # gli elementi diagnostici li giudica il classificatore
         j = int(z.argmax())
@@ -385,11 +401,12 @@ class ElementNamer:
                      "vocabolario": V_NOMI}, path)
 
     @classmethod
-    def load(cls, fm: FinalModel, path) -> "ElementNamer":
+    def load(cls, fm: FinalModel, path, affidabili=None) -> "ElementNamer":
+        """affidabili: nomi che si possono mostrare (None = tutti; l'app passa NOMI_AFFIDABILI)."""
         import joblib
         d = joblib.load(path)
-        assert d["vocabolario"] == V_NOMI, "vocabolario cambiato: rieseguire il notebook 05b"
-        return cls(fm, d["probe"], d["soglia_probe"], d.get("soglia_zs", ZS_SPENTO))
+        assert d["vocabolario"] == V_NOMI, "vocabolario cambiato: rieseguire il notebook 05c"
+        return cls(fm, d["probe"], d["soglia_probe"], d.get("soglia_zs", ZS_SPENTO), affidabili)
 
 
 # ---------------------------------------------------------------------------
@@ -464,6 +481,39 @@ def top_regions(seg: np.ndarray, weights: np.ndarray, k: int = 3, min_side: int 
 def crop(img: np.ndarray, box) -> np.ndarray:
     x0, y0, x1, y1 = box[:4]
     return np.ascontiguousarray(img[y0:y1, x0:x1])
+
+
+def spiega(fm: FinalModel, img: np.ndarray, namer: ElementNamer | None = None, num_samples: int = 600,
+           k: int = 3, seed: int = config.SEED) -> dict:
+    """Spiegazione completa di una foto 448 × 448 (uint8), come nell'app.
+
+    Restituisce: probabilità degli stili e delle famiglie, famiglia e stile (risposta gerarchica), stile rivale,
+    risultato LIME (super-pixel, pesi per famiglia/stile/contrasto, R²) e fino a k zone a favore dello stile, ognuna
+    con riquadro, peso LIME, ritaglio, nome dell'elemento (o None = «dettaglio decisivo») e rapporto con lo stile
+    predetto. Le zone di sfondo (cielo, alberi, persone…) vengono saltate."""
+    p = fm.predict([img])[0]
+    fam, stile, pf = hi.predict(p[None])
+    fam, stile, pf = int(fam[0]), int(stile[0]), pf[0]
+    rivale = int(next(j for j in np.argsort(-p) if j != stile))
+    cols = lambda X: output_columns(fm.predict(X), (stile, rivale))
+    res = lime_explain(cols, img, [stile, col_family(fam), COL_CONTRASTO], num_samples=num_samples, seed=seed)
+    zone = []
+    cand = top_regions(res["segments"], res["pesi"][stile], k=2 * k)
+    if cand:
+        crops = [crop(img, b) for b in cand]
+        nomi = namer.name(crops) if namer is not None else [None] * len(cand)
+        for b, c, d in zip(cand, crops, nomi):
+            if d is not None and d["tipo"] == "sfondo":
+                continue
+            nome = d["nome"] if d else None
+            zone.append({"box": b[:4], "peso": b[4], "ritaglio": c, "nome": nome,
+                         "conf": d["conf"] if d and nome else None,
+                         "tipico": d["tipico"] if d and nome else None,
+                         "relazione": relazione_stile(d["tipico"], config.CLASSES[stile]) if d and nome else None})
+            if len(zone) == k:
+                break
+    return {"p": p, "p_famiglie": pf, "famiglia": fam, "stile": stile, "rivale": rivale, "lime": res,
+            "r2_stile": res["r2"][stile], "zone": zone}
 
 
 # ---------------------------------------------------------------------------
