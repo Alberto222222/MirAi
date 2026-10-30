@@ -1,0 +1,41 @@
+{
+ "foto_spiegate": 48,
+ "campioni_lime": 600,
+ "r2_lime": {
+  "stile": 0.71,
+  "famiglia": 0.633,
+  "contrasto": 0.706
+ },
+ "deletion": {
+  "LIME (modello definitivo)": {
+   "AUC media (pi\u00f9 bassa = meglio)": 0.485,
+   "probabilit\u00e0 iniziale": 0.791,
+   "probabilit\u00e0 al 20% cancellato": 0.575
+  },
+  "casuale (modello definitivo)": {
+   "AUC media (pi\u00f9 bassa = meglio)": 0.686,
+   "probabilit\u00e0 iniziale": 0.791,
+   "probabilit\u00e0 al 20% cancellato": 0.764
+  },
+  "Grad-CAM (VGG-16)": {
+   "AUC media (pi\u00f9 bassa = meglio)": 0.234,
+   "probabilit\u00e0 iniziale": 0.731,
+   "probabilit\u00e0 al 20% cancellato": 0.259
+  },
+  "casuale (VGG-16)": {
+   "AUC media (pi\u00f9 bassa = meglio)": 0.404,
+   "probabilit\u00e0 iniziale": 0.731,
+   "probabilit\u00e0 al 20% cancellato": 0.592
+  }
+ },
+ "nomi_elementi": {
+  "top-1": 0.3819951338199513,
+  "top-3": 0.6496350364963503,
+  "stile del nome corretto": 0.7104622871046229
+ },
+ "coerenza_nomi_famiglia": 0.7352941176470589,
+ "accuratezza_insieme_valutazione": {
+  "definitivo_stile": 0.7083333333333334,
+  "vgg_stile": 0.4583333333333333
+ }
+}

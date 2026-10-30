@@ -1,0 +1,5 @@
+,AUC media (più bassa = meglio),probabilità iniziale,probabilità al 20% cancellato
+LIME (modello definitivo),0.485,0.791,0.575
+casuale (modello definitivo),0.686,0.791,0.764
+Grad-CAM (VGG-16),0.234,0.731,0.259
+casuale (VGG-16),0.404,0.731,0.592
