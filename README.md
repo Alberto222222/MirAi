@@ -26,7 +26,8 @@ Foto 448×448 ──► VGG-16 pre-addestrata (fine-tuning blocchi 4-5) ──�
 | 4f. Sei stili | monumenti di ogni tipo da Wikidata (+ Classico antico, Neoclassico), elementi MonuMAI | ✅ |
 | 4g. Transformer e gerarchia | CLIP + DINOv2 congelati, risposta famiglia → stile: **modello definitivo** | ✅ |
 | 5. Valutazione | accuracy, P/R/F1 per classe, matrice di confusione, McNemar | ☐ |
-| 6. Explainable AI | LIME (modello definitivo), Grad-CAM (VGG-16), deletion test, nomi degli elementi | ⏳ |
+| 6. Explainable AI | LIME (modello definitivo), Grad-CAM (VGG-16), deletion test | ✅ |
+| 6b. Nomi degli elementi | classificatore sui ritagli MonuMAI + astensione, controllo foto/disegni, galleria | ⏳ |
 | 7. App | Gradio: stile + heatmap + descrizione di stile, elementi e monumento | ☐ |
 
 ## Risultati sul test ufficiale (1.481 immagini)
@@ -93,9 +94,10 @@ Le immagini **non** stanno su GitHub: sono su Google Drive
 9. `notebooks/01c_monumenti_wikidata.ipynb` (GPU): dataset di monumenti a 6 stili da Wikidata, con pulizia.
 10. `notebooks/03e_sei_stili.ipynb` (GPU): modello a 6 stili e decisione.
 11. `notebooks/03f_transformer_gerarchico.ipynb` (GPU): CLIP e DINOv2 congelati, risposta gerarchica.
-12. `notebooks/05_spiegabilita.ipynb` (GPU): LIME, Grad-CAM e deletion test.
-13. `notebooks/04b_som_modello_finale.ipynb` (GPU T4, quasi tutto CPU): SOM del modello definitivo, edifici simili, foto fuori dominio.
-13. `notebooks/04_som.ipynb` (GPU): mappa di Kohonen dello spazio degli stili e chiese simili
+12. `notebooks/04b_som_modello_finale.ipynb` (GPU T4, quasi tutto CPU): SOM del modello definitivo, edifici simili, foto fuori dominio.
+13. `notebooks/05_spiegabilita.ipynb` (GPU): LIME, Grad-CAM e deletion test.
+14. `notebooks/05b_spiegabilita_nomi.ipynb` (GPU): nomi degli elementi (classificatore + astensione), qualità dei dati, galleria.
+15. `notebooks/04_som.ipynb` (GPU): mappa di Kohonen dello spazio degli stili e chiese simili
    (usa la risoluzione indicata in `reports/metrics/modello_finale.json`).
 
 Ogni notebook si esegue dall'alto in basso.

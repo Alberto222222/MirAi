@@ -15,6 +15,10 @@
 - Deletion test: si cancellano (sfocano) i pixel dal più al meno importante e si misura la caduta della
   probabilità; una spiegazione fedele fa cadere la probabilità più in fretta di un ordine casuale.
 - Nome degli elementi: CLIP confronta il ritaglio di una zona importante con frasi come «a pointed gothic arch».
+  Versione 1 (notebook 05): 31 nomi, una frase ciascuno. Versione 2 (notebook 05b, app): vocabolario più ampio con
+  più frasi per nome, classificatore lineare addestrato sui ritagli MonuMAI per i 9 elementi diagnostici,
+  zone di sfondo scartate e astensione sotto una soglia di confidenza (ElementNamer).
+- Controllo di qualità: probabilità che un'immagine sia un disegno o un'incisione invece di una foto.
 """
 from __future__ import annotations
 
@@ -135,6 +139,29 @@ class FinalModel:
             p = (p + self.predict([np.ascontiguousarray(np.asarray(x)[:, ::-1]) for x in images])) / 2
         return p
 
+    def text_embed(self, groups, templates=("{}",)) -> np.ndarray:
+        """Un vettore di testo CLIP per ogni gruppo di frasi: media normalizzata su frasi × modelli di frase."""
+        torch = self.torch
+        model, _ = self.nets["clip"]
+        if not hasattr(self, "_tok"):
+            from transformers import CLIPTokenizer
+            self._tok = CLIPTokenizer.from_pretrained(config.BACKBONES["clip"])
+        out = []
+        for frasi in groups:
+            frasi = [frasi] if isinstance(frasi, str) else list(frasi)
+            t = self._tok([m.format(f) for f in frasi for m in templates], padding=True, return_tensors="pt")
+            t = {k: v.to(self.fd.DEVICE) for k, v in t.items()}
+            with torch.no_grad():
+                e = model.text_projection(model.text_model(**t).pooler_output).float().cpu().numpy()
+            e = e / np.linalg.norm(e, axis=1, keepdims=True)
+            m = e.mean(0)
+            out.append(m / np.linalg.norm(m))
+        return np.stack(out)
+
+    def image_embed(self, images) -> np.ndarray:
+        e = self._embed("clip", images)
+        return e / np.linalg.norm(e, axis=1, keepdims=True)
+
     def name_elements(self, crops) -> np.ndarray:
         """Probabilità (n_ritagli, n_elementi) che ogni ritaglio mostri ciascun elemento (CLIP zero-shot)."""
         torch = self.torch
@@ -152,6 +179,199 @@ class FinalModel:
         z = 100.0 * im @ self._txt.T
         z = np.exp(z - z.max(1, keepdims=True))
         return z / z.sum(1, keepdims=True)
+
+
+# ---------------------------------------------------------------------------
+# Nomi degli elementi, versione 2 (notebook 05b e app)
+# ---------------------------------------------------------------------------
+# Più frasi per elemento e più modelli di frase (media dei vettori di testo): riduce la dipendenza da una
+# singola formulazione. Il vocabolario comprende elementi che nella versione 1 mancavano (bugnato, finestra con
+# timpanino, merlatura…) e zone di sfondo da scartare.
+TEMPLATE = ("a photo of {}.", "a close-up photo of {}, architectural detail.",
+            "{} on a historic building.", "a detail of a facade showing {}.")
+# (nome italiano, tipico, tipo, frasi).
+# tipico: stile (es. "Gothic"), famiglia (es. "Classicismo moderno") o None se l'elemento compare in più famiglie
+# (es. il timpano triangolare: templi antichi, Rinascimento, Barocco, Neoclassico).
+# tipo: "diagnostico" = elemento annotato da MonuMAI (riconosciuto dal classificatore addestrato sui ritagli),
+# "elemento" = solo zero-shot, "sfondo" = zona scartata.
+VOCABOLARIO = [
+    ("arco a sesto acuto", "Gothic", "diagnostico", ["a pointed gothic arch", "a gothic lancet arch window"]),
+    ("arco inflesso", "Gothic", "diagnostico", ["an ogee arch", "a late gothic ogee arch over a doorway"]),
+    ("arco trilobato", "Gothic", "diagnostico", ["a trefoil arch", "a three-lobed gothic arch"]),
+    ("pinnacolo gotico", "Gothic", "diagnostico", ["a gothic pinnacle", "small gothic spires with crockets"]),
+    ("timpano triangolare", None, "diagnostico", ["a triangular pediment", "a classical triangular gable"]),
+    ("timpano curvo", "Classicismo moderno", "diagnostico", ["a curved segmental pediment", "a rounded arched pediment"]),
+    ("serliana", "Renaissance", "diagnostico",
+     ["a serliana window", "a palladian window with a central arch and two side openings"]),
+    ("timpano spezzato", "Baroque", "diagnostico", ["a broken pediment", "a baroque pediment broken open at the top"]),
+    ("colonna tortile (salomonica)", "Baroque", "diagnostico", ["a twisted solomonic column", "a spiral twisted column"]),
+    ("rosone", "Gothic", "elemento", ["a rose window", "a large circular stained glass window"]),
+    ("archi rampanti", "Gothic", "elemento", ["flying buttresses"]),
+    ("archetti pensili", "Romanesque", "elemento",
+     ["a row of small blind arches under the eaves", "romanesque lombard bands"]),
+    ("portale strombato", "Romanesque", "elemento",
+     ["a deep recessed romanesque portal with concentric round arches"]),
+    ("muratura massiccia con piccole finestre", "Romanesque", "elemento", ["a thick stone wall with small windows"]),
+    ("bugnato", "Classicismo moderno", "elemento",
+     ["rusticated stone masonry", "a facade of large rough-cut stone blocks", "diamond-point rustication"]),
+    ("volute", "Baroque", "elemento", ["baroque scrolls and volutes", "large curved scrolls on a facade"]),
+    ("facciata concava e convessa", "Baroque", "elemento", ["a curved concave and convex baroque facade"]),
+    ("rovina romana", "Classical", "elemento", ["an ancient roman ruin", "ancient stone ruins"]),
+    ("arcate di anfiteatro", "Classical", "elemento", ["the arches of a roman amphitheatre"]),
+    ("gradinate di teatro antico", "Classical", "elemento", ["the stone seats of an ancient theatre"]),
+    ("tempio con colonne", "Classical", "elemento", ["a greek temple with columns", "an ancient temple"]),
+    ("pronao neoclassico", "Neoclassical", "elemento", ["a neoclassical portico with columns and a pediment"]),
+    ("arco a tutto sesto", None, "elemento", ["a round arch", "a semicircular arched doorway"]),
+    ("bifora", None, "elemento", ["a mullioned window with two arched lights"]),
+    ("finestra con cornice", None, "elemento", ["a window with a decorated stone frame"]),
+    ("lesene", None, "elemento", ["flat pilasters on a facade"]),
+    ("loggia ad archi", None, "elemento", ["an arcade of arches on columns", "a loggia"]),
+    ("statua in nicchia", None, "elemento", ["a statue in a niche"]),
+    ("merlatura", None, "elemento", ["battlements on top of a wall", "crenellations of a castle"]),
+    ("balaustra", None, "elemento", ["a stone balustrade"]),
+    ("cornicione", None, "elemento", ["a projecting cornice under the roof"]),
+    ("cupola", None, "elemento", ["a dome"]),
+    ("oculo", None, "elemento", ["an oval porthole window", "a round oculus window"]),
+    ("colonnato", None, "elemento", ["a row of classical columns"]),
+    ("campanile o torre", None, "elemento", ["a bell tower", "a tower"]),
+    ("finestra", None, "elemento", ["a plain window"]),
+    ("portale", None, "elemento", ["a door", "an entrance doorway"]),
+    ("tetto", None, "elemento", ["a roof", "roof tiles"]),
+    ("muro in mattoni", None, "elemento", ["a brick wall"]),
+    ("muro intonacato", None, "elemento", ["a plain plastered wall"]),
+    ("cielo", None, "sfondo", ["the sky", "clouds"]),
+    ("alberi", None, "sfondo", ["trees", "leaves and branches"]),
+    ("persone", None, "sfondo", ["people", "tourists"]),
+    ("automobili", None, "sfondo", ["cars", "a street with parked cars"]),
+    ("prato o terreno", None, "sfondo", ["grass", "the ground"]),
+    ("acqua", None, "sfondo", ["water", "a river"]),
+]
+V_NOMI = [v[0] for v in VOCABOLARIO]
+V_TIPICO = [v[1] for v in VOCABOLARIO]
+V_TIPO = [v[2] for v in VOCABOLARIO]
+V_FRASI = [v[3] for v in VOCABOLARIO]
+DIAGNOSTICI = [n for n, t in zip(V_NOMI, V_TIPO) if t == "diagnostico"]
+assert sorted(DIAGNOSTICI) == sorted(MONUMAI_A_NOME.values())
+ALTRO = "altro"            # classe «nessun elemento diagnostico» del classificatore
+
+
+def famiglia_tipica(tipico) -> int | None:
+    """Indice della famiglia a cui rimanda uno stile o una famiglia tipica (None = nessuna)."""
+    if tipico is None:
+        return None
+    if tipico in config.FAMIGLIE:
+        return list(config.FAMIGLIE).index(tipico)
+    return int(hi.style_to_family()[config.CLASSES.index(tipico)])
+
+
+def nome_tipico(tipico) -> str:
+    return config.CLASS_NAMES_IT.get(tipico, tipico)
+
+
+# Foto o disegno? (controllo di qualità dei dati e avviso nell'app)
+FRASI_FOTO = ["a photograph of a building", "a color photo of a church", "a black and white photograph of a building",
+              "a photo of a monument", "a photo of ancient ruins"]
+FRASI_NON_FOTO = ["an old engraving of a city", "a pen drawing of a building", "a painting of a building",
+                  "an architectural drawing or plan", "a vintage illustration of a castle", "a map",
+                  "a watercolor of a church"]
+
+
+def prob_non_foto(fm: FinalModel, E: np.ndarray) -> np.ndarray:
+    """Probabilità (CLIP zero-shot) che l'immagine sia un disegno, un'incisione, un dipinto o una pianta.
+    E: vettori immagine CLIP normalizzati."""
+    T = fm.text_embed(FRASI_FOTO + FRASI_NON_FOTO)
+    E = E / np.linalg.norm(E, axis=1, keepdims=True)
+    z = 100.0 * E @ T.T
+    z = np.exp(z - z.max(1, keepdims=True))
+    p = z / z.sum(1, keepdims=True)
+    return p[:, len(FRASI_FOTO):].sum(1)
+
+
+def fit_probe(E: np.ndarray, nomi, groups, seed: int = config.SEED):
+    """Classificatore lineare (regressione logistica multinomiale = un neurone softmax per classe) sui vettori CLIP
+    dei ritagli: 9 elementi diagnostici + classe ALTRO (ritagli casuali senza elementi diagnostici).
+    Regolarizzazione scelta con validazione incrociata raggruppata per monumento."""
+    from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
+    from sklearn.model_selection import GroupKFold
+    from sklearn.pipeline import make_pipeline
+    from sklearn.preprocessing import StandardScaler
+    nomi, groups = np.asarray(nomi), np.asarray(groups)
+    try:
+        cv = list(GroupKFold(min(3, len(np.unique(groups)))).split(E, nomi, groups))
+        lr = LogisticRegressionCV(Cs=[0.001, 0.01, 0.1, 1.0], cv=cv, class_weight="balanced", max_iter=3000,
+                                  random_state=seed)
+        return make_pipeline(StandardScaler(), lr).fit(E, nomi)
+    except ValueError:                                     # pochi esempi: regolarizzazione fissa
+        lr = LogisticRegression(C=0.01, class_weight="balanced", max_iter=3000, random_state=seed)
+        return make_pipeline(StandardScaler(), lr).fit(E, nomi)
+
+
+class ElementNamer:
+    """Nome dell'elemento architettonico in un ritaglio.
+
+    1. Classificatore addestrato sui ritagli MonuMAI (9 elementi diagnostici + «altro»): se indica un elemento
+       diagnostico con confidenza ≥ soglia_probe, quello è il nome.
+    2. Altrimenti CLIP zero-shot sugli altri nomi del vocabolario (frasi multiple per nome): le zone di sfondo
+       (cielo, alberi, persone…) vengono scartate; il nome si mostra se la probabilità è ≥ soglia_zs.
+    3. Astensione: sotto le soglie (scelte per una precisione ≈ 80%) il nome non viene mostrato e la zona resta un
+       «dettaglio decisivo» senza nome.
+    Senza classificatore (probe=None) i 9 elementi diagnostici sono trattati come gli altri nomi zero-shot.
+    """
+
+    def __init__(self, fm: FinalModel, probe=None, soglia_probe: float = 0.0, soglia_zs: float = 0.0):
+        self.fm, self.probe = fm, probe
+        self.soglia_probe, self.soglia_zs = soglia_probe, soglia_zs
+        self.T = fm.text_embed(V_FRASI, TEMPLATE)
+        self.diag = np.array([t == "diagnostico" for t in V_TIPO])
+
+    def zero_shot(self, E: np.ndarray) -> np.ndarray:
+        z = 100.0 * E @ self.T.T
+        z = np.exp(z - z.max(1, keepdims=True))
+        return z / z.sum(1, keepdims=True)
+
+    @staticmethod
+    def _out(nome, conf, ok, via):
+        j = V_NOMI.index(nome)
+        return {"nome": nome if ok else None, "candidato": nome, "conf": float(conf),
+                "tipico": V_TIPICO[j] if ok else None, "tipo": V_TIPO[j], "via": via}
+
+    def decide(self, z: np.ndarray, pp: np.ndarray | None = None) -> dict:
+        cand_diag = None
+        if pp is not None:
+            k = int(pp.argmax())
+            nome = str(self.probe.classes_[k])
+            if nome != ALTRO:
+                if pp[k] >= self.soglia_probe:
+                    return self._out(nome, pp[k], True, "classificatore")
+                cand_diag = (nome, pp[k])
+            z = np.where(self.diag, 0.0, z)                # gli elementi diagnostici li giudica il classificatore
+        j = int(z.argmax())
+        if V_TIPO[j] == "sfondo":
+            return {"nome": None, "candidato": V_NOMI[j], "conf": float(z[j]), "tipico": None, "tipo": "sfondo",
+                    "via": "zero-shot"}
+        if z[j] >= self.soglia_zs:
+            return self._out(V_NOMI[j], z[j], True, "zero-shot")
+        if cand_diag is not None:
+            return self._out(cand_diag[0], cand_diag[1], False, "classificatore")
+        return self._out(V_NOMI[j], z[j], False, "zero-shot")
+
+    def name(self, crops=None, E: np.ndarray | None = None) -> list[dict]:
+        E = self.fm.image_embed(crops) if E is None else E
+        Z = self.zero_shot(E)
+        PP = self.probe.predict_proba(E) if self.probe is not None else [None] * len(E)
+        return [self.decide(z, pp) for z, pp in zip(Z, PP)]
+
+    def save(self, path) -> None:
+        import joblib
+        joblib.dump({"probe": self.probe, "soglia_probe": self.soglia_probe, "soglia_zs": self.soglia_zs,
+                     "vocabolario": V_NOMI}, path)
+
+    @classmethod
+    def load(cls, fm: FinalModel, path) -> "ElementNamer":
+        import joblib
+        d = joblib.load(path)
+        assert d["vocabolario"] == V_NOMI, "vocabolario cambiato: rieseguire il notebook 05b"
+        return cls(fm, d["probe"], d["soglia_probe"], d["soglia_zs"])
 
 
 # ---------------------------------------------------------------------------

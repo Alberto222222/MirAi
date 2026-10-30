@@ -558,3 +558,45 @@ meno affidabili. LIME tratta il modello come una scatola nera e spiega quindi es
 - **Nomi degli elementi**: le 3 zone LIME più importanti vengono ritagliate e CLIP (zero-shot) sceglie il nome tra
   31 frasi (elementi tipici degli stili e distrattori). Verifica sui ritagli degli elementi annotati da MonuMAI.
 Immagini nel formato di valutazione della VGG-16: lato corto 512 px, ritaglio centrale 448 × 448.
+
+**Risultati (48 foto: 6 monumenti per stile + 3 chiese per ciascuno dei 4 stili originali; 600 campioni LIME).**
+- Controllo sull'insieme (ritaglio 448, senza TTA): stile 0,71 (modello definitivo) e 0,46 (VGG-16), famiglia 0,92.
+  L'insieme è bilanciato per stile: il valore va confrontato con la balanced accuracy del test (0,712 chiese, 0,707
+  monumenti), non con l'accuracy.
+- Fedeltà locale di LIME (R² medio): stile 0,71, contrasto 0,71, famiglia 0,63 (la probabilità della famiglia è
+  spesso saturata vicino a 1 e varia poco: più difficile da approssimare con una retta).
+- Deletion test, AUC media (più bassa = meglio): LIME 0,485 contro 0,686 dell'ordine casuale, migliore nel 100% delle
+  foto (Wilcoxon p = 7·10⁻¹⁵); cancellando il 20% indicato da LIME la probabilità scende da 0,79 a 0,58, a caso solo a
+  0,76. Grad-CAM 0,234 contro 0,404, migliore nel 96% (p = 9·10⁻¹¹). Le due AUC non sono confrontabili tra loro
+  (modelli diversi, super-pixel contro celle 28 × 28; la VGG-16 perde probabilità anche con cancellazioni casuali).
+- Con l'immagine interamente sfocata il modello definitivo dà ancora 0,46 allo stile predetto: una parte della
+  decisione si basa su informazioni a bassa frequenza (colori, materiale, sagoma), non solo sugli elementi.
+- Galleria: spiegazioni convincenti sugli esempi corretti (bugnato di Palazzo Sanuti Bevilacqua, cavea dell'anfiteatro
+  di Avella, pronao della cattedrale di Göteborg). S. Maria della Pace (Roma), etichettata Rinascimentale e predetta
+  Barocca: la facciata fotografata è di Pietro da Cortona (1656), cioè barocca; è un caso di etichetta riferita
+  all'edificio e non alla parte fotografata.
+- **Nomi degli elementi (punto debole):** sui ritagli MonuMAI nome corretto 38% (top-3 65%); arco inflesso 2%, timpano
+  spezzato 5%. Sulle foto CLIP assegna «timpano curvo» a finestre, bugnato e frontoni triangolari, sempre con «tipico:
+  Rinascimentale»: un'indicazione sbagliata per uno scopo educativo.
+- Problemi del notebook e dei dati: come esempio di uno stile la galleria mostrava una foto classificata male (e la
+  stessa foto due volte); un'immagine «gotica» (Martinsburg) è un'incisione antica, non una fotografia.
+
+## D20 – Nomi degli elementi con classificatore e astensione, qualità dei dati (notebook 05b)
+Correzioni al notebook 05 senza riaddestrare il modello di stile; LIME non cambia (fedeltà già dimostrata).
+- **Vocabolario v2:** 46 nomi con più frasi ciascuno e 4 modelli di frase (media dei vettori di testo CLIP); nuovi
+  elementi (bugnato, merlatura, loggia, portale strombato, lesene…) e zone di sfondo (cielo, alberi, persone, auto,
+  prato, acqua), che vengono scartate invece di ricevere a forza il nome di un elemento.
+- **Classificatore degli elementi:** regressione logistica multinomiale (un neurone softmax per classe) sui vettori
+  CLIP dei ritagli MonuMAI, 9 elementi diagnostici + classe «altro» (ritagli casuali di foto romaniche del training,
+  dove gli elementi diagnostici di Gotico, Rinascimento e Barocco sono assenti) per misurare i falsi allarmi.
+  Validazione incrociata a 5 parti raggruppata per monumento; regolarizzazione scelta con una validazione interna,
+  anch'essa per monumento. Se il classificatore indica «altro», vale il nome zero-shot tra gli altri elementi.
+- **Astensione:** soglia di confidenza più bassa con precisione ≥ 80%; sotto la soglia la zona si mostra come
+  «dettaglio decisivo» senza nome (stessa logica delle risposte sicure dello stile).
+- **Elemento tipico:** MonuMAI associa il timpano triangolare al Rinascimento perché considera solo 3 stili; con 6 stili
+  compare anche nei templi antichi, nel Barocco e nel Neoclassico, quindi non viene più indicato come tipico di uno
+  stile. Timpano curvo e bugnato rimandano alla famiglia Classicismo moderno.
+- **Qualità dei dati:** CLIP zero-shot «fotografia o disegno?» su training e test (caratteristiche già calcolate nel
+  notebook 03f). Le metriche ufficiali restano quelle di D17; quelle senza le immagini segnalate sono riportate a parte.
+- **Galleria:** per ogni stile la foto classificata correttamente con la confidenza più alta; casi problematici senza
+  duplicati; un'immagine non fotografica come caso a sé.
