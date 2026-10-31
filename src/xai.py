@@ -484,18 +484,26 @@ def crop(img: np.ndarray, box) -> np.ndarray:
 
 
 def spiega(fm: FinalModel, img: np.ndarray, namer: ElementNamer | None = None, num_samples: int = 600,
-           k: int = 3, seed: int = config.SEED) -> dict:
+           k: int = 3, seed: int = config.SEED, p: np.ndarray | None = None, progress=None) -> dict:
     """Spiegazione completa di una foto 448 × 448 (uint8), come nell'app.
 
     Restituisce: probabilità degli stili e delle famiglie, famiglia e stile (risposta gerarchica), stile rivale,
     risultato LIME (super-pixel, pesi per famiglia/stile/contrasto, R²) e fino a k zone a favore dello stile, ognuna
     con riquadro, peso LIME, ritaglio, nome dell'elemento (o None = «dettaglio decisivo») e rapporto con lo stile
-    predetto. Le zone di sfondo (cielo, alberi, persone…) vengono saltate."""
-    p = fm.predict([img])[0]
+    predetto. Le zone di sfondo (cielo, alberi, persone…) vengono saltate.
+    p: probabilità già calcolate (l'app le calcola con la media originale + ribaltata); progress(frazione) facoltativo."""
+    p = fm.predict([img])[0] if p is None else np.asarray(p)
     fam, stile, pf = hi.predict(p[None])
     fam, stile, pf = int(fam[0]), int(stile[0]), pf[0]
     rivale = int(next(j for j in np.argsort(-p) if j != stile))
-    cols = lambda X: output_columns(fm.predict(X), (stile, rivale))
+    fatti = [0]
+
+    def cols(X):
+        out = output_columns(fm.predict(X), (stile, rivale))
+        fatti[0] += len(X)
+        if progress is not None:
+            progress(min(1.0, fatti[0] / num_samples))
+        return out
     res = lime_explain(cols, img, [stile, col_family(fam), COL_CONTRASTO], num_samples=num_samples, seed=seed)
     zone = []
     cand = top_regions(res["segments"], res["pesi"][stile], k=2 * k)

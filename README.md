@@ -97,7 +97,7 @@ metriche). Dettagli e motivazioni di ogni scelta in `docs/decisioni.md`.
 | 5. Mappa di Kohonen | spazio degli stili, edifici simili, foto fuori dominio | 04, 04b |
 | 6. Spiegabilità | LIME, Grad-CAM, deletion test | 05 |
 | 6b. Nomi degli elementi | classificatore con astensione, tarato sulle zone LIME | 05c (05b: passaggio intermedio) |
-| 7. App | Gradio: foto → famiglia e stile, zone LIME ingrandite, descrizione; schermata tecnica | in corso |
+| 7. App | Gradio, italiano e inglese: «Guida» (Mira, stile, descrizione, zone LIME da scorrere, edifici simili) e «Laboratorio» (probabilità, LIME completo, SOM, metriche, riscontri) | 06 |
 
 <details><summary>Benchmark a 4 stili sulle chiese (modelli CNN, fasi 2–3)</summary>
 
@@ -128,6 +128,9 @@ MirAi/
 │   ├── som.py            mappa auto-organizzante di Kohonen (NumPy)
 │   ├── foundation.py     CLIP / DINOv2 congelati: estrazione caratteristiche e teste
 │   ├── hierarchy.py      risposta gerarchica famiglia → stile e relative metriche
+│   ├── app_logic.py      logica dell'app: analisi, controlli, edifici simili, riscontri
+│   ├── app_ui.py         interfaccia Gradio (Guida e Laboratorio), mascotte Mira
+│   ├── descrizioni.py    testi di stili, famiglie ed elementi (italiano e inglese)
 │   ├── xai.py            LIME (spiega: pipeline dell'app), deletion test, nomi degli elementi, Grad-CAM
 │   ├── colab_git.py      commit e push da Colab senza esporre il token
 │   └── data/
@@ -154,6 +157,7 @@ classificatore degli elementi).
 5. Mappa di Kohonen: `04_som`, `04b_som_modello_finale` (GPU T4, quasi tutto CPU).
 6. Spiegabilità: `05_spiegabilita` (LIME, Grad-CAM, deletion test), `05c_nomi_elementi` (nomi degli elementi).
    `05b_spiegabilita_nomi` documenta il passaggio intermedio e non è necessario.
+7. App: `06_app` (GPU T4) → link pubblico e codice QR.
 
 Ogni notebook si esegue dall'alto in basso.
 

@@ -657,3 +657,23 @@ Neoclassico) non ha elementi annotati in MonuMAI.
 - Notebook di riferimento: 05 (LIME, Grad-CAM, deletion test) e 05c (nomi). Il 05b è un passaggio intermedio:
   il vocabolario zero-shot ampliato era peggiore (0,30 → 0,17) e il classificatore addestrato su ritagli stretti
   non funzionava sulle zone LIME.
+
+## D23 – Applicazione (notebook 06)
+- **Gradio in Colab** con link pubblico: il modello (CLIP + DINOv2, circa 1,2 GB) e LIME (600 predizioni per foto)
+  richiedono una GPU; senza GPU una spiegazione richiederebbe minuti. Il link dura finché il notebook è attivo (al
+  massimo 72 ore) e si rigenera rieseguendo il notebook.
+- **Due tempi:** la risposta (famiglia, stile, descrizione, edifici simili) arriva in circa 1 s; LIME e le zone
+  ingrandite arrivano dopo circa 20 s, con barra di avanzamento. La predizione usa la media delle caratteristiche di
+  foto originale e ribaltata, come nel test.
+- **Onestà della risposta:** famiglia e stile con la frase sull'affidabilità misurata sul test (88% / 91% per le
+  risposte sicure); avvisi per foto fuori dominio (soglia ricalcolata come nel 04b: 95° percentile del validation) e
+  per disegni (CLIP, probabilità ≥ 0,9).
+- **Riscontri** salvati su Drive e usati solo dopo verifica manuale: etichette non controllate potrebbero peggiorare
+  il modello, e le foto possono contenere persone.
+- **Mascotte Mira:** personaggio originale (figura morbida di marmo con occhi a punto, corona d'alloro, drappo porpora
+  e compasso d'architetto, su un capitello), disegnata in SVG e animata con CSS.
+- **Grafica:** «Guida» come vetrina di una piattaforma di streaming (foto del monumento in grande con il titolo dello
+  stile, righe orizzontali da scorrere: zone LIME, edifici simili); risposte come messaggi di chat di Mira; pulsanti
+  e titoli in Poppins, bolle e carte bianche su fondo porpora scuro con sfumature porpora → pesca; motivo a puntini (sfondo, confidenza come fila di punti, indicatore di attesa).
+  Tutto il risultato è HTML generato in Python (`app_ui.vetrina_html`), così la grafica non dipende dai componenti
+  di Gradio.
