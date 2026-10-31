@@ -21,15 +21,15 @@ N_LIME = 600
 
 # Colori
 CALDI = {"notte": "#160b14", "notte2": "#24101f", "porpora": "#8a2a6b", "porpora_chiaro": "#c2508f", "pesca": "#ffb08a",
-         "pesca_chiaro": "#ffd9c4", "bianco": "#ffffff", "inchiostro": "#2a1424", "grigio": "#7a6672",
-         "oro": "#ffc93c", "oro_scuro": "#a86d00", "crema": "#fff7f2"}
+         "pesca_chiaro": "#ffd9c4", "corallo": "#ff8f7a", "bianco": "#ffffff", "inchiostro": "#2a1424", "grigio": "#7a6672",
+         "oro": "#ffc93c", "oro_scuro": "#a86d00", "crema": "#fff7f2", "sfondo": "#0b0809"}
 BLU = {"notte": "#0b1d3a", "blocco": "#12305c", "bordo": "#2a5a9c", "accento": "#4da3ff", "testo": "#e6f0ff"}
 COL_FAM = ["#b3261e", "#6d1a4f", "#d4a017"]          # Medievale, Classicismo moderno, Classico antico
 COL_FAM_LAB = ["#4da3ff", "#a78bfa", "#f6c453"]
 
 
 # ---------------------------------------------------------------------------
-# Mira: mascotte originale (statuetta di marmo con corona d'alloro, toga porpora e compasso d'architetto)
+# Mira: mascotte originale (statuetta di marmo con corona d'alloro e drappo porpora)
 # ---------------------------------------------------------------------------
 def _alloro() -> str:
     foglie = []
@@ -45,7 +45,7 @@ def _alloro() -> str:
 
 def mira_svg(stato: str = "attesa") -> str:
     """Mira: figura morbida di marmo (testa e corpo in un'unica forma), occhi a punto, corona d'alloro,
-    drappo porpora e compasso d'architetto, su un piccolo capitello."""
+    drappo porpora, su un piccolo capitello."""
     oy = 112 if stato != "pensa" else 108
     ox = 4 if stato == "pensa" else 0
     # sempre sorridente: cambia solo l'ampiezza del sorriso (e un sopracciglio alzato quando è in dubbio)
@@ -76,12 +76,8 @@ def mira_svg(stato: str = "attesa") -> str:
  <path d="M60 168 Q104 178 160 150 L162 176 Q110 200 62 194 Z" fill="url(#toga)" opacity=".95"/>
  <circle cx="80" cy="182" r="4" fill="#ffc93c"/>
  {_alloro()}
- <g class="mira-compasso">
-  <ellipse cx="166" cy="170" rx="10" ry="15" transform="rotate(-30 166 170)" fill="url(#marmo)"/>
-  <line x1="172" y1="160" x2="180" y2="122" stroke="#c48a00" stroke-width="3.5" stroke-linecap="round"/>
-  <line x1="172" y1="160" x2="196" y2="132" stroke="#c48a00" stroke-width="3.5" stroke-linecap="round"/>
-  <circle cx="172" cy="160" r="4.5" fill="url(#oro)"/>
- </g>
+ <ellipse cx="57" cy="172" rx="9" ry="14" transform="rotate(20 57 172)" fill="url(#marmo)"/>
+ <g class="mira-mano"><ellipse cx="163" cy="168" rx="9" ry="14" transform="rotate(-25 163 168)" fill="url(#marmo)"/></g>
  <g class="mira-occhi">
   <circle cx="{94 + ox}" cy="{oy}" r="7.5" fill="#2a1622"/><circle cx="{126 + ox}" cy="{oy}" r="7.5" fill="#2a1622"/>
   <circle cx="{96.5 + ox}" cy="{oy - 2.5}" r="2.2" fill="#fff"/><circle cx="{128.5 + ox}" cy="{oy - 2.5}" r="2.2" fill="#fff"/>
@@ -123,40 +119,38 @@ def _url_font() -> str:
 def crea_css() -> str:
     """Foglio di stile, ricostruito con i valori attuali di colori e caratteri."""
     C, B = CALDI, BLU
-    grad = f"linear-gradient(135deg, {C['porpora']} 0%, {C['porpora_chiaro']} 45%, {C['pesca']} 100%)"
+    grad = C["pesca"]          # colore principale, a tinta unita
+    grad_btn = f"linear-gradient(135deg, {C['pesca_chiaro']} 0%, {C['pesca']} 45%, {C['corallo']} 80%, {C['porpora_chiaro']} 100%)"
     return f"""
 @import url('{_url_font()}');
 .gradio-container {{
   --body-background-fill: transparent; --background-fill-primary: transparent;
-  --block-background-fill: rgba(255,255,255,0.05); --block-border-color: rgba(255,255,255,0.12);
-  --block-label-background-fill: transparent; --block-label-text-color: {C['pesca_chiaro']};
-  --block-title-text-color: {C['pesca_chiaro']}; --body-text-color: {C['crema']};
-  --body-text-color-subdued: #cdb3c0; --input-background-fill: rgba(255,255,255,0.06);
-  --border-color-primary: rgba(255,255,255,0.14); --color-accent-soft: rgba(255,176,138,0.15);
-  font-family: '{FONT_TESTO}', sans-serif; max-width: 1180px !important; color: {C['crema']};
-  background:
-    radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1.6px) 0 0 / 22px 22px,
-    radial-gradient(520px 520px at 92% 4%, rgba(255,176,138,0.30), transparent 70%),
-    radial-gradient(620px 620px at 0% 30%, rgba(138,42,107,0.45), transparent 70%),
-    radial-gradient(500px 500px at 70% 95%, rgba(194,80,143,0.25), transparent 70%),
-    linear-gradient(180deg, {C['notte2']} 0%, {C['notte']} 100%) !important;
+  --block-background-fill: #141012; --block-border-color: rgba(255,255,255,0.10);
+  --block-label-background-fill: transparent; --block-label-text-color: {C['pesca']};
+  --block-title-text-color: {C['pesca']}; --body-text-color: #f5ece8;
+  --body-text-color-subdued: #b9a9b1; --input-background-fill: #141012;
+  --border-color-primary: rgba(255,255,255,0.12); --color-accent-soft: rgba(255,176,138,0.12);
+  font-family: '{FONT_TESTO}', sans-serif; max-width: 1180px !important; color: #f5ece8;
+  background: {C['sfondo']} !important;
 }}
-body {{ background: {C['notte']} !important; }}
+body {{ background: {C['sfondo']} !important; }}
 .gradio-container * {{ font-family: '{FONT_TESTO}', sans-serif; }}
 .titolo-app {{ display:flex; align-items:center; gap:14px; }}
 .titolo-app h1 {{ font-family:'{FONT_TITOLI}', sans-serif; font-weight:800; font-size:2.6rem; margin:0; letter-spacing:-.02em;
-  background:{grad}; -webkit-background-clip:text; background-clip:text; color:transparent; }}
-.titolo-app p {{ margin:0; color:{C['pesca_chiaro']}; font-weight:500; }}
-.orb {{ width:34px; height:34px; border-radius:50%; background:{grad}; box-shadow: 0 0 24px rgba(255,176,138,.55);
-  animation: respira 4s ease-in-out infinite; }}
+  color:{C['pesca']}; }}
+.titolo-app p {{ margin:0; color:{C['porpora_chiaro']}; font-weight:500; }}
+.logo {{ width:52px; height:52px; transition: transform .2s; }}
+.logo:hover {{ transform: rotate(-6deg) scale(1.05); }}
 @keyframes respira {{ 50% {{ transform: scale(1.12); filter: hue-rotate(-12deg); }} }}
-.tab-nav button {{ font-weight:600 !important; font-size:1rem !important; color:{C['pesca_chiaro']} !important; }}
-.tab-nav button.selected {{ color:{C['bianco']} !important; border-color:{C['pesca']} !important; }}
+.lingua, .lingua > div, .lingua fieldset {{ background:transparent !important; border:none !important; box-shadow:none !important; padding:0 !important; }}
+.lingua label {{ border-radius:999px !important; }}
+.tab-nav button {{ font-weight:600 !important; font-size:1rem !important; color:#9c8a93 !important; }}
+.tab-nav button.selected {{ color:{C['pesca']} !important; border-color:{C['pesca']} !important; }}
 /* pulsante: pillola con sfumatura porpora → pesca */
-.bottone-stile {{ font-weight:700 !important; font-size:1.15rem !important; color:#fff !important; border:none !important;
-  border-radius:999px !important; background:{grad} !important; padding:14px 22px !important;
-  box-shadow: 0 8px 26px rgba(194,80,143,.45), inset 0 1px 0 rgba(255,255,255,.35) !important; transition: transform .12s, box-shadow .12s; }}
-.bottone-stile:hover {{ transform: translateY(-1px); box-shadow: 0 12px 30px rgba(255,176,138,.5) !important; }}
+.bottone-stile {{ font-weight:700 !important; font-size:1.15rem !important; color:#3a0f2e !important; border:none !important;
+  border-radius:999px !important; background:{grad_btn} !important; padding:14px 22px !important;
+  box-shadow: none !important; transition: transform .12s, box-shadow .12s; }}
+.bottone-stile:hover {{ filter: brightness(1.06); transform: translateY(-1px); }}
 .bottone-stile:active {{ transform: scale(.98); }}
 /* chat: bolle bianche */
 .chat {{ display:flex; flex-direction:column; gap:14px; padding:6px 2px; }}
@@ -164,51 +158,51 @@ body {{ background: {C['notte']} !important; }}
 .msg.utente {{ justify-content:flex-end; }}
 .chat-host {{ display:flex; gap:18px; align-items:flex-start; }}
 .host {{ position:sticky; top:12px; width:170px; min-width:150px; text-align:center; }}
-.host svg {{ width:100%; filter: drop-shadow(0 10px 18px rgba(0,0,0,.4)); }}
-.host-nome {{ display:inline-block; margin-top:2px; padding:3px 14px; border-radius:999px; background:{grad}; color:#fff;
+.host svg {{ width:100%; }}
+.host-nome {{ display:inline-block; margin-top:2px; padding:3px 14px; border-radius:999px; background:{C['pesca']}; color:#3a0f2e;
   font-weight:700; font-size:.85rem; }}
 .chat {{ flex:1; }}
 .bolla.larga {{ max-width:100%; }}
 .bolla {{ background:{C['bianco']}; color:{C['inchiostro']}; border-radius:22px 22px 22px 6px; padding:13px 17px; max-width:88%;
-  line-height:1.5; font-size:.97rem; box-shadow: 0 6px 20px rgba(0,0,0,.25); }}
-.bolla b {{ color:{C['porpora']}; }}
-.msg.utente .bolla {{ background:{grad}; color:#fff; border-radius:22px 22px 6px 22px; }}
-.msg.utente .bolla b {{ color:#fff; }}
+  line-height:1.5; font-size:.97rem; }}
+.msg.utente .bolla {{ background:{C['porpora']}; color:#fff; border-radius:22px 22px 6px 22px; font-weight:500; }}
 .bolla img.mini {{ display:block; width:160px; border-radius:14px; margin-top:8px; }}
-.bolla.avviso {{ background:{C['pesca_chiaro']}; }}
+.bolla.avviso {{ background:#fff; border-left:5px solid {C['pesca']}; }}
 .bolla h4 {{ font-weight:700; color:{C['porpora']}; margin:0 0 6px; font-size:1.1rem; }}
 .puntini {{ display:inline-flex; gap:5px; vertical-align:middle; margin-left:6px; }}
-.puntini i {{ width:8px; height:8px; border-radius:50%; background:{grad}; animation: salta 1s infinite ease-in-out; }}
+.puntini i {{ width:8px; height:8px; border-radius:50%; background:{C['porpora_chiaro']}; animation: salta 1s infinite ease-in-out; }}
 .puntini i:nth-child(2) {{ animation-delay:.15s; }} .puntini i:nth-child(3) {{ animation-delay:.3s; }}
 @keyframes salta {{ 0%, 80%, 100% {{ transform: translateY(0); opacity:.5; }} 40% {{ transform: translateY(-5px); opacity:1; }} }}
 .dots {{ display:inline-flex; gap:6px; margin:12px 0 4px; }}
 .dots i {{ width:12px; height:12px; border-radius:50%; background:rgba(255,255,255,.22); }}
-.dots i.on {{ box-shadow: 0 0 10px rgba(255,176,138,.55); }}
+.dots i.on {{ background:{C['pesca']} !important; }}
 @keyframes entra {{ from {{ opacity:0; transform: translateY(6px); }} to {{ opacity:1; transform:none; }} }}
 /* vetrina */
-.hero {{ position:relative; height:440px; border-radius:28px; overflow:hidden; box-shadow: 0 20px 50px rgba(0,0,0,.5);
-  margin-bottom:26px; background:{C['notte']}; }}
-.hero-sfondo {{ position:absolute; inset:-30px; background-size:cover; background-position:center; filter: blur(26px) brightness(.4) saturate(1.2); }}
+.hero {{ position:relative; height:440px; border-radius:28px; overflow:hidden; 
+  margin-bottom:26px; background:#2e0b25; }}
+.hero-sfondo {{ display:none; }}
 .hero-foto {{ position:absolute; right:0; top:0; height:100%; aspect-ratio:1/1; object-fit:cover;
   -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 30%); mask-image: linear-gradient(90deg, transparent 0%, #000 30%); }}
 .hero::after {{ content:''; position:absolute; inset:0; pointer-events:none;
-  background: linear-gradient(0deg, rgba(22,11,20,.8) 0%, rgba(22,11,20,0) 42%); }}
+  background: linear-gradient(0deg, rgba(46,11,37,.8) 0%, rgba(46,11,37,0) 42%); }}
 .hero-testo {{ position:absolute; left:32px; bottom:30px; z-index:1; max-width:56%; }}
 .pill {{ display:inline-block; padding:5px 13px; border-radius:999px; font-size:.78rem; font-weight:600;
   background:{C['bianco']}; color:{C['porpora']}; }}
 .pill.rossa {{ background:{C['pesca_chiaro']}; color:#a3243a; }}
 .hero-titolo {{ font-family:'{FONT_TITOLI}', sans-serif; font-weight:800; font-size:4.2rem; line-height:1.02; margin:12px 0 6px;
-  color:#fff; letter-spacing:-.03em; text-shadow: 0 6px 30px rgba(0,0,0,.45); }}
+  color:#fff; letter-spacing:-.03em; }}
 .hero-meta {{ color:#f5dfe9; font-size:1rem; }}
 .hero-meta b {{ color:{C['pesca']}; }}
+.bolla b {{ color:{C['porpora']}; }}
+.msg.utente .bolla b {{ color:#fff; }}
 .riga h3 {{ font-family:'{FONT_TITOLI}', sans-serif; font-weight:700; font-size:1.35rem; color:#fff; margin:22px 0 12px; }}
-.riga h3 span {{ font-size:.75rem; font-weight:600; color:{C['porpora']}; background:{C['bianco']}; border-radius:999px;
+.riga h3 span {{ font-size:.75rem; font-weight:600; color:{C['pesca']}; background:{C['porpora']}; border-radius:999px;
   padding:3px 10px; margin-left:10px; vertical-align:middle; }}
 .scorri {{ display:flex; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; padding:4px 2px 16px; }}
-.scorri::-webkit-scrollbar {{ height:8px; }} .scorri::-webkit-scrollbar-thumb {{ background: rgba(255,255,255,.25); border-radius:4px; }}
+.scorri::-webkit-scrollbar {{ height:8px; }} .scorri::-webkit-scrollbar-thumb {{ background: rgba(255,176,138,.35); border-radius:4px; }}
 .carta {{ flex:0 0 230px; scroll-snap-align:start; position:relative; border-radius:22px; overflow:hidden;
-  background:{C['bianco']}; color:{C['inchiostro']}; box-shadow: 0 8px 24px rgba(0,0,0,.3); transition: transform .2s, box-shadow .2s; }}
-.carta:hover {{ transform: translateY(-4px) scale(1.02); box-shadow: 0 16px 34px rgba(194,80,143,.35); }}
+  background:{C['bianco']}; color:{C['inchiostro']}; transition: transform .2s, box-shadow .2s; }}
+.carta:hover {{ transform: translateY(-4px); }}
 .carta.larga {{ flex-basis:300px; }}
 .carta img {{ width:100%; aspect-ratio:1/1; object-fit:cover; display:block; }}
 .carta .corpo {{ padding:12px 14px 14px; }}
@@ -217,42 +211,42 @@ body {{ background: {C['notte']} !important; }}
 .carta .tag {{ display:inline-block; margin-top:9px; font-size:.74rem; font-weight:600; padding:4px 10px; border-radius:999px;
   background:{C['pesca_chiaro']}; color:{C['porpora']}; }}
 .num {{ position:absolute; top:10px; left:10px; width:30px; height:30px; border-radius:50%; display:flex; align-items:center;
-  justify-content:center; font-weight:700; color:#fff; background:{grad}; box-shadow:0 4px 12px rgba(0,0,0,.3); }}
+  justify-content:center; font-weight:700; color:{C['pesca']}; background:{C['porpora']}; }}
 .scheletro {{ height:310px; background: linear-gradient(90deg, #f4ecef, #ffffff, #f4ecef); background-size:200% 100%;
   animation: luccica 1.4s infinite; }}
 @keyframes luccica {{ from {{ background-position:200% 0; }} to {{ background-position:-200% 0; }} }}
 .mira-corpo {{ animation: galleggia 3.6s ease-in-out infinite; }}
 .mira-occhi {{ transform-box: view-box; transform-origin: 110px 112px; animation: battito 5s infinite; }}
-.mira-pensa .mira-compasso {{ transform-box: view-box; transform-origin: 172px 160px; animation: oscilla 1.2s ease-in-out infinite; }}
+.mira-fatto .mira-mano, .mira-attesa .mira-mano {{ transform-box: view-box; transform-origin: 158px 178px; animation: saluta 2.4s ease-in-out infinite; }}
+@keyframes saluta {{ 0%, 60%, 100% {{ transform: rotate(0); }} 70% {{ transform: rotate(-22deg); }} 80% {{ transform: rotate(4deg); }} 90% {{ transform: rotate(-18deg); }} }}
 .mira-idea {{ animation: brilla 1.4s ease-in-out infinite; }}
 @keyframes galleggia {{ 50% {{ transform: translateY(-6px); }} }}
 @keyframes battito {{ 0%, 93%, 100% {{ transform: scaleY(1); }} 96% {{ transform: scaleY(0.1); }} }}
 @keyframes oscilla {{ 50% {{ transform: rotate(-12deg); }} }}
 @keyframes brilla {{ 50% {{ opacity: 0.4; }} }}
 .benvenuto {{ display:flex; align-items:center; gap:28px; padding:30px 34px; border-radius:28px; background:{C['bianco']};
-  color:{C['inchiostro']}; box-shadow: 0 16px 40px rgba(0,0,0,.35); position:relative; overflow:hidden; }}
-.benvenuto::before {{ content:''; position:absolute; width:340px; height:340px; left:-60px; top:-90px; border-radius:50%;
-  background: radial-gradient(circle, rgba(255,176,138,.55), rgba(194,80,143,.25) 55%, transparent 72%); filter: blur(10px); }}
+  color:{C['inchiostro']}; position:relative; overflow:hidden; }}
+
 .benvenuto svg {{ width:250px; min-width:180px; position:relative; }}
 .benvenuto h2 {{ font-family:'{FONT_TITOLI}', sans-serif; font-weight:800; font-size:2.2rem; margin:0 0 6px; letter-spacing:-.02em;
-  background:{grad}; -webkit-background-clip:text; background-clip:text; color:transparent; }}
+  color:{C['porpora']}; }}
 .benvenuto p {{ color:{C['grigio']}; margin:4px 0; }}
 /* laboratorio */
 .lab {{ --block-background-fill: {B['blocco']}; --block-border-color: {B['bordo']}; --body-text-color: {B['testo']};
   --block-label-text-color: {B['accento']}; --block-title-text-color: {B['accento']}; --input-background-fill: #0f2547;
-  --border-color-primary: {B['bordo']}; background: radial-gradient(500px 400px at 90% 0%, rgba(77,163,255,.25), transparent 70%),
-  linear-gradient(170deg, {B['notte']}, #10284f) !important; border-radius:24px; padding:16px; color:{B['testo']}; }}
+  --border-color-primary: {B['bordo']}; background: {B['notte']} !important; border-radius:24px; padding:16px; color:{B['testo']}; }}
 .carta-lab {{ background:{B['blocco']}; border:1px solid {B['bordo']}; border-radius:18px; padding:16px 20px; color:{B['testo']}; overflow-x:auto; }}
 .lab h3 {{ font-weight:700; color:#fff; margin:4px 0 10px; }}
 .lab table {{ width:100%; border-collapse:collapse; font-size:.9rem; }}
 .lab th, .lab td {{ border-bottom:1px solid {B['bordo']}; padding:6px 8px; text-align:left; color:{B['testo']}; }}
 .lab th {{ color:{B['accento']}; }}
 .lab .carta {{ background:#fff; }}
-.lab .riga h3 span {{ color:#1d4f91; }}
+.lab .riga h3 {{ color:#fff; }}
+.lab .riga h3 span {{ color:#1d4f91; background:#fff; }}
 @media (max-width: 680px) {{
   .hero {{ height:430px; }} .hero-foto {{ width:100%; height:auto; aspect-ratio:1/1;
     -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%); mask-image: linear-gradient(180deg, #000 55%, transparent 100%); }}
-  .hero::after {{ background: linear-gradient(0deg, rgba(22,11,20,.97) 0%, rgba(22,11,20,.85) 35%, rgba(22,11,20,0) 65%); }}
+  .hero::after {{ background: linear-gradient(0deg, rgba(46,11,37,.97) 0%, rgba(46,11,37,.85) 35%, rgba(46,11,37,0) 65%); }}
   .hero-testo {{ left:18px; right:18px; bottom:18px; max-width:none; }}
   .hero-titolo {{ font-size:2.7rem; }} .carta {{ flex-basis:200px; }} .carta.larga {{ flex-basis:260px; }}
   .benvenuto {{ flex-direction:column; text-align:center; padding:24px; }} .titolo-app h1 {{ font-size:2.1rem; }}
@@ -270,12 +264,10 @@ CSS = crea_css()
 def dots(v: float, n: int = 10) -> str:
     """Livello di confidenza come fila di puntini (v in [0, 1])."""
     k = int(round(v * n))
-    a, b = np.array([0x8a, 0x2a, 0x6b]), np.array([0xff, 0xb0, 0x8a])
     out = []
     for i in range(n):
         if i < k:
-            c = (a + (b - a) * i / max(1, n - 1)).astype(int)
-            out.append(f'<i class="on" style="background:rgb({c[0]},{c[1]},{c[2]})"></i>')
+            out.append('<i class="on"></i>')
         else:
             out.append("<i></i>")
     return '<div class="dots">' + "".join(out) + "</div>"
@@ -559,8 +551,25 @@ LIME: SLIC ~60 super-pixel · {N_LIME} {"perturbations" if en else "perturbazion
 # ---------------------------------------------------------------------------
 # Interfaccia
 # ---------------------------------------------------------------------------
+def logo_svg() -> str:
+    """Logo: quadrato arrotondato porpora con una «M» pesca: le due aste sono colonne (capitello, fusto scanalato,
+    base), la V centrale unisce i due capitelli."""
+    def colonna(x: float) -> str:          # x = centro della colonna
+        return (f'<rect x="{x - 7}" y="14" width="14" height="3.4" rx="1.2" fill="#ffb08a"/>'
+                f'<rect x="{x - 5.5}" y="17" width="11" height="4.5" rx="1" fill="#ffb08a"/>'
+                f'<rect x="{x - 4}" y="21" width="8" height="26" fill="#ffb08a"/>'
+                f'<line x1="{x - 1.6}" y1="24" x2="{x - 1.6}" y2="44" stroke="#8a2a6b" stroke-width="1.1"/>'
+                f'<line x1="{x + 1.6}" y1="24" x2="{x + 1.6}" y2="44" stroke="#8a2a6b" stroke-width="1.1"/>'
+                f'<rect x="{x - 5.5}" y="46.5" width="11" height="2.8" rx="1" fill="#ffb08a"/>')
+    return f"""<svg class="logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="MirAi">
+<rect x="2" y="2" width="60" height="60" rx="18" fill="#8a2a6b"/>
+<path d="M22.5 21 L32 37 L41.5 21" stroke="#ffb08a" stroke-width="5.4" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+{colonna(18)}{colonna(46)}
+</svg>"""
+
+
 def intestazione(lang: str) -> str:
-    return f'<div class="titolo-app"><div class="orb"></div><h1>{t(lang, "titolo")}</h1><p>{t(lang, "sottotitolo")}</p></div>'
+    return f'<div class="titolo-app">{logo_svg()}<h1>{t(lang, "titolo")}</h1><p>{t(lang, "sottotitolo")}</p></div>'
 
 
 def scelte_stile(lang: str):
@@ -610,9 +619,10 @@ def costruisci(app, esempi: list[str] | None = None):
         stato = gr.State(None)
         with gr.Row(equal_height=True):
             testa = gr.HTML(intestazione("it"))
-            lingua = gr.Radio([("Italiano", "it"), ("English", "en")], value="it", show_label=False, scale=0, min_width=220)
+            lingua = gr.Radio([("Italiano", "it"), ("English", "en")], value="it", show_label=False, container=False,
+                              scale=0, min_width=220, elem_classes=["lingua"])
         with gr.Tabs():
-            with gr.Tab("🏛️ Guida · Guide"):
+            with gr.Tab("Guida"):
                 with gr.Row():
                     with gr.Column(scale=4, min_width=280):
                         foto = gr.Image(sources=["upload", "webcam"], type="pil", label=t("it", "carica"), height=320)
@@ -622,7 +632,7 @@ def costruisci(app, esempi: list[str] | None = None):
                     with gr.Column(scale=6, min_width=280):
                         chat = gr.HTML(chat_html("it"))
                 vetrina = gr.HTML(vetrina_html(None, None, "it"))
-            with gr.Tab("🔬 Laboratorio · Lab", elem_classes=["lab"]):
+            with gr.Tab("Lab", elem_classes=["lab"]):
                 info = gr.HTML(lab_vuoto("it"))
                 probs = gr.Plot(show_label=False)
                 lime3 = gr.HTML()

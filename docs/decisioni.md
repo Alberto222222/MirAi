@@ -670,10 +670,10 @@ Neoclassico) non ha elementi annotati in MonuMAI.
   per disegni (CLIP, probabilità ≥ 0,9).
 - **Riscontri** salvati su Drive e usati solo dopo verifica manuale: etichette non controllate potrebbero peggiorare
   il modello, e le foto possono contenere persone.
-- **Mascotte Mira:** personaggio originale (figura morbida di marmo con occhi a punto, corona d'alloro, drappo porpora
-  e compasso d'architetto, su un capitello), disegnata in SVG e animata con CSS.
+- **Mascotte Mira:** personaggio originale (figura morbida di marmo con occhi a punto, corona d'alloro, drappo porpora,
+  su un capitello). Logo: quadrato arrotondato pesca porpora a tinta unita con una «M» pesca formata da due colonne, disegnata in SVG e animata con CSS.
 - **Grafica:** «Guida» come vetrina di una piattaforma di streaming (foto del monumento in grande con il titolo dello
   stile, righe orizzontali da scorrere: zone LIME, edifici simili); risposte come messaggi di chat di Mira; pulsanti
-  e titoli in Poppins, bolle e carte bianche su fondo porpora scuro con sfumature porpora → pesca; motivo a puntini (sfondo, confidenza come fila di punti, indicatore di attesa).
+  e titoli in Poppins, bolle e carte bianche su fondo nero a tinta unita, accenti pesca (pulsante, titolo, confidenza) e porpora (numeri, bolle, etichette), niente sfumature decorative; puntini solo per la confidenza e l'indicatore di attesa.
   Tutto il risultato è HTML generato in Python (`app_ui.vetrina_html`), così la grafica non dipende dai componenti
   di Gradio.

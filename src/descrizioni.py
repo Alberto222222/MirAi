@@ -153,7 +153,7 @@ ELEMENTI = {
 # Interfaccia
 T = {
     "it": {
-        "tab_guida": "🏛️ Guida", "tab_lab": "🔬 Laboratorio",
+        "tab_guida": "Guida", "tab_lab": "Lab",
         "titolo": "MirAi", "sottotitolo": "La tua guida tascabile agli stili dell'architettura",
         "carica": "Scatta o carica la foto di un monumento", "analizza": "Che stile è?",
         "esempi": "Oppure prova con una di queste foto",
@@ -195,7 +195,7 @@ T = {
         "lab_lime_riga": "LIME sulle tre domande", "pezzo": "Pezzo",
     },
     "en": {
-        "tab_guida": "🏛️ Guide", "tab_lab": "🔬 Lab",
+        "tab_guida": "Guide", "tab_lab": "Lab",
         "titolo": "MirAi", "sottotitolo": "Your pocket guide to architectural styles",
         "carica": "Take or upload a photo of a monument", "analizza": "Which style is it?",
         "esempi": "Or try one of these photos",
