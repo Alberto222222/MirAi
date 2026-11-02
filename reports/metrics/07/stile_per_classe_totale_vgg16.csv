@@ -1,0 +1,7 @@
+,precision,recall,F1,ROC-AUC,supporto
+Romanico,0.711,0.696,0.704,0.895,728
+Gotico,0.676,0.689,0.682,0.869,731
+Rinascimentale,0.498,0.443,0.469,0.854,325
+Barocco,0.709,0.559,0.625,0.873,597
+Classico antico,0.562,0.809,0.664,0.969,89
+Neoclassico,0.437,0.676,0.531,0.909,225

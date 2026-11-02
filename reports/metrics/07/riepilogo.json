@@ -1,0 +1,328 @@
+{
+ "stile": {
+  "Definitivo | WikiChurches": {
+   "accuracy": 0.777,
+   "accuracy (stile gerarchico)": 0.777,
+   "balanced accuracy": 0.712,
+   "precision macro": 0.744,
+   "recall macro": 0.712,
+   "F1 macro": 0.724,
+   "precision weighted": 0.793,
+   "recall weighted": 0.777,
+   "F1 weighted": 0.782,
+   "Cohen kappa": 0.683,
+   "MCC": 0.685,
+   "top-2": 0.919,
+   "top-3": 0.976,
+   "ROC-AUC macro (OvR)": 0.935,
+   "log-loss": 0.628,
+   "ECE": 0.038
+  },
+  "Definitivo | Wikidata": {
+   "accuracy": 0.68,
+   "accuracy (stile gerarchico)": 0.684,
+   "balanced accuracy": 0.707,
+   "precision macro": 0.701,
+   "recall macro": 0.707,
+   "F1 macro": 0.692,
+   "precision weighted": 0.692,
+   "recall weighted": 0.68,
+   "F1 weighted": 0.674,
+   "Cohen kappa": 0.612,
+   "MCC": 0.617,
+   "top-2": 0.863,
+   "top-3": 0.95,
+   "ROC-AUC macro (OvR)": 0.922,
+   "log-loss": 0.918,
+   "ECE": 0.092
+  },
+  "Definitivo | Totale": {
+   "accuracy": 0.733,
+   "accuracy (stile gerarchico)": 0.735,
+   "balanced accuracy": 0.759,
+   "precision macro": 0.715,
+   "recall macro": 0.759,
+   "F1 macro": 0.733,
+   "precision weighted": 0.742,
+   "recall weighted": 0.733,
+   "F1 weighted": 0.735,
+   "Cohen kappa": 0.662,
+   "MCC": 0.663,
+   "top-2": 0.894,
+   "top-3": 0.964,
+   "ROC-AUC macro (OvR)": 0.942,
+   "log-loss": 0.758,
+   "ECE": 0.057
+  },
+  "VGG-16 | WikiChurches": {
+   "accuracy": 0.698,
+   "accuracy (stile gerarchico)": 0.696,
+   "balanced accuracy": 0.595,
+   "precision macro": 0.67,
+   "recall macro": 0.595,
+   "F1 macro": 0.619,
+   "precision weighted": 0.725,
+   "recall weighted": 0.698,
+   "F1 weighted": 0.706,
+   "Cohen kappa": 0.57,
+   "MCC": 0.573,
+   "top-2": 0.87,
+   "top-3": 0.95,
+   "ROC-AUC macro (OvR)": 0.894,
+   "log-loss": 0.862,
+   "ECE": 0.045
+  },
+  "VGG-16 | Wikidata": {
+   "accuracy": 0.56,
+   "accuracy (stile gerarchico)": 0.556,
+   "balanced accuracy": 0.585,
+   "precision macro": 0.565,
+   "recall macro": 0.585,
+   "F1 macro": 0.564,
+   "precision weighted": 0.563,
+   "recall weighted": 0.56,
+   "F1 weighted": 0.552,
+   "Cohen kappa": 0.467,
+   "MCC": 0.471,
+   "top-2": 0.765,
+   "top-3": 0.876,
+   "ROC-AUC macro (OvR)": 0.857,
+   "log-loss": 1.277,
+   "ECE": 0.132
+  },
+  "VGG-16 | Totale": {
+   "accuracy": 0.636,
+   "accuracy (stile gerarchico)": 0.633,
+   "balanced accuracy": 0.645,
+   "precision macro": 0.599,
+   "recall macro": 0.645,
+   "F1 macro": 0.612,
+   "precision weighted": 0.648,
+   "recall weighted": 0.636,
+   "F1 weighted": 0.637,
+   "Cohen kappa": 0.538,
+   "MCC": 0.54,
+   "top-2": 0.823,
+   "top-3": 0.917,
+   "ROC-AUC macro (OvR)": 0.895,
+   "log-loss": 1.049,
+   "ECE": 0.084
+  }
+ },
+ "famiglia": {
+  "Definitivo | WikiChurches": {
+   "accuracy": 0.912,
+   "balanced accuracy": 0.906,
+   "precision macro": 0.896,
+   "recall macro": 0.906,
+   "F1 macro": 0.9,
+   "Cohen kappa": 0.801,
+   "ECE": 0.023
+  },
+  "Definitivo | Wikidata": {
+   "accuracy": 0.862,
+   "balanced accuracy": 0.873,
+   "precision macro": 0.85,
+   "recall macro": 0.873,
+   "F1 macro": 0.857,
+   "Cohen kappa": 0.747,
+   "ECE": 0.036
+  },
+  "Definitivo | Totale": {
+   "accuracy": 0.89,
+   "balanced accuracy": 0.908,
+   "precision macro": 0.859,
+   "recall macro": 0.908,
+   "F1 macro": 0.881,
+   "Cohen kappa": 0.793,
+   "ECE": 0.027
+  },
+  "VGG-16 | WikiChurches": {
+   "accuracy": 0.895,
+   "balanced accuracy": 0.87,
+   "precision macro": 0.888,
+   "recall macro": 0.87,
+   "F1 macro": 0.879,
+   "Cohen kappa": 0.755,
+   "ECE": 0.026
+  },
+  "VGG-16 | Wikidata": {
+   "accuracy": 0.815,
+   "balanced accuracy": 0.795,
+   "precision macro": 0.757,
+   "recall macro": 0.795,
+   "F1 macro": 0.772,
+   "Cohen kappa": 0.665,
+   "ECE": 0.054
+  },
+  "VGG-16 | Totale": {
+   "accuracy": 0.859,
+   "balanced accuracy": 0.832,
+   "precision macro": 0.777,
+   "recall macro": 0.832,
+   "F1 macro": 0.8,
+   "Cohen kappa": 0.734,
+   "ECE": 0.03
+  }
+ },
+ "per_classe": {
+  "WikiChurches": {
+   "Romanico": {
+    "precision": 0.877,
+    "recall": 0.738,
+    "F1": 0.801,
+    "ROC-AUC": 0.936,
+    "supporto": 503
+   },
+   "Gotico": {
+    "precision": 0.776,
+    "recall": 0.85,
+    "F1": 0.811,
+    "ROC-AUC": 0.931,
+    "supporto": 506
+   },
+   "Rinascimentale": {
+    "precision": 0.557,
+    "recall": 0.44,
+    "F1": 0.492,
+    "ROC-AUC": 0.923,
+    "supporto": 100
+   },
+   "Barocco": {
+    "precision": 0.766,
+    "recall": 0.82,
+    "F1": 0.792,
+    "ROC-AUC": 0.949,
+    "supporto": 372
+   }
+  },
+  "Wikidata": {
+   "Romanico": {
+    "precision": 0.727,
+    "recall": 0.747,
+    "F1": 0.737,
+    "ROC-AUC": 0.94,
+    "supporto": 225
+   },
+   "Gotico": {
+    "precision": 0.762,
+    "recall": 0.484,
+    "F1": 0.592,
+    "ROC-AUC": 0.9,
+    "supporto": 225
+   },
+   "Rinascimentale": {
+    "precision": 0.577,
+    "recall": 0.813,
+    "F1": 0.675,
+    "ROC-AUC": 0.905,
+    "supporto": 225
+   },
+   "Barocco": {
+    "precision": 0.686,
+    "recall": 0.533,
+    "F1": 0.6,
+    "ROC-AUC": 0.869,
+    "supporto": 225
+   },
+   "Classico antico": {
+    "precision": 0.778,
+    "recall": 0.944,
+    "F1": 0.853,
+    "ROC-AUC": 0.996,
+    "supporto": 89
+   },
+   "Neoclassico": {
+    "precision": 0.675,
+    "recall": 0.72,
+    "F1": 0.697,
+    "ROC-AUC": 0.923,
+    "supporto": 225
+   }
+  },
+  "Totale": {
+   "Romanico": {
+    "precision": 0.824,
+    "recall": 0.74,
+    "F1": 0.78,
+    "ROC-AUC": 0.939,
+    "supporto": 728
+   },
+   "Gotico": {
+    "precision": 0.773,
+    "recall": 0.737,
+    "F1": 0.755,
+    "ROC-AUC": 0.918,
+    "supporto": 731
+   },
+   "Rinascimentale": {
+    "precision": 0.573,
+    "recall": 0.698,
+    "F1": 0.63,
+    "ROC-AUC": 0.917,
+    "supporto": 325
+   },
+   "Barocco": {
+    "precision": 0.742,
+    "recall": 0.712,
+    "F1": 0.726,
+    "ROC-AUC": 0.922,
+    "supporto": 597
+   },
+   "Classico antico": {
+    "precision": 0.771,
+    "recall": 0.944,
+    "F1": 0.848,
+    "ROC-AUC": 0.998,
+    "supporto": 89
+   },
+   "Neoclassico": {
+    "precision": 0.609,
+    "recall": 0.72,
+    "F1": 0.66,
+    "ROC-AUC": 0.956,
+    "supporto": 225
+   }
+  }
+ },
+ "risposte_sicure": {
+  "soglia stile": 0.8,
+  "copertura stile": 0.5565862708719852,
+  "accuratezza stile sicura": 0.88,
+  "soglia famiglia": 0.6,
+  "copertura famiglia": 0.9476808905380334,
+  "accuratezza famiglia sicura": 0.9072043852779953
+ },
+ "intervalli_95": {
+  "Definitivo | WikiChurches": {
+   "accuracy stile": "0.754 \u2013 0.799",
+   "F1 macro stile": "0.695 \u2013 0.752",
+   "accuracy famiglia": "0.897 \u2013 0.926"
+  },
+  "Definitivo | Wikidata": {
+   "accuracy stile": "0.655 \u2013 0.706",
+   "F1 macro stile": "0.667 \u2013 0.717",
+   "accuracy famiglia": "0.843 \u2013 0.881"
+  },
+  "Definitivo | Totale": {
+   "accuracy stile": "0.717 \u2013 0.750",
+   "F1 macro stile": "0.715 \u2013 0.752",
+   "accuracy famiglia": "0.877 \u2013 0.901"
+  },
+  "VGG-16 | WikiChurches": {
+   "accuracy stile": "0.674 \u2013 0.721",
+   "F1 macro stile": "0.588 \u2013 0.650",
+   "accuracy famiglia": "0.879 \u2013 0.910"
+  },
+  "VGG-16 | Wikidata": {
+   "accuracy stile": "0.534 \u2013 0.587",
+   "F1 macro stile": "0.536 \u2013 0.591",
+   "accuracy famiglia": "0.794 \u2013 0.838"
+  },
+  "VGG-16 | Totale": {
+   "accuracy stile": "0.617 \u2013 0.653",
+   "F1 macro stile": "0.591 \u2013 0.633",
+   "accuracy famiglia": "0.846 \u2013 0.873"
+  }
+ }
+}

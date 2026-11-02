@@ -1,0 +1,4 @@
+,precision,recall,F1,supporto
+Medievale,0.894,0.749,0.815,450
+Classicismo moderno,0.855,0.927,0.89,675
+Classico antico,0.8,0.944,0.866,89
